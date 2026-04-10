@@ -41,10 +41,10 @@ func main() {
             Body(body).
             Send(func(resp *fetch.Response, err error) {
                 if err != nil {
-                    dom.Render("result", dom.P("Error: "+err.Error()))
+                    dom.Render("result", dom.P("Error: "+err.Error()).Class("error-msg"))
                     return
                 }
-                dom.Render("result", dom.P("¡Mensaje enviado!"))
+                dom.Render("result", dom.P("¡Mensaje enviado!").Class("success-msg"))
             })
 
         return nil

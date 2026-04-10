@@ -26,3 +26,4 @@ func (m *ContactForm) Pointers() []any {
 func (m *ContactForm) Validate(action byte) error {
 	return fmt.ValidateFields(action, m)
 }
+
