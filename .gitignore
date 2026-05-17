@@ -3,3 +3,4 @@
 .env
 client
 web/server
+*.log
