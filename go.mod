@@ -7,6 +7,6 @@ require (
 	github.com/tinywasm/fetch v0.1.23
 	github.com/tinywasm/fmt v0.23.7
 	github.com/tinywasm/form v0.2.2
-	github.com/tinywasm/goflare v0.2.6
+	github.com/tinywasm/goflare v0.2.8
 	github.com/tinywasm/json v0.5.2
 )
