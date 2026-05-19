@@ -1,11 +1,11 @@
 package contact
 
 import (
-	"github.com/tinywasm/goflare/cloudflare"
-	"github.com/tinywasm/goflare/router"
-	"github.com/tinywasm/json"
+	//"github.com/tinywasm/goflare/cloudflare"
 	"github.com/tinywasm/fetch"
 	"github.com/tinywasm/fmt"
+	"github.com/tinywasm/goflare/router"
+	"github.com/tinywasm/json"
 )
 
 func Handle(ctx router.Context) {
@@ -36,11 +36,11 @@ func Handle(ctx router.Context) {
 		return
 	}
 
-	if err := sendEmail(data, cloudflare.Env("RESEND_API_KEY")); err != nil {
+	/* 	if err := sendEmail(data, cloudflare.Env("RESEND_API_KEY")); err != nil {
 		ctx.WriteStatus(502)
 		ctx.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
-	}
+	} */
 
 	ctx.WriteStatus(200)
 	ctx.Write([]byte(`{"message":"¡Gracias! Hemos recibido tu solicitud."}`))

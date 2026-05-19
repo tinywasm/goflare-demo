@@ -44,7 +44,9 @@ func main() {
 		return nil
 	})
 
-	if err := dom.Render("app", f); err != nil {
+	container := dom.Div(f, dom.Div().ID("result"))
+
+	if err := dom.Render("app", container); err != nil {
 		fmt.Println("render error:", err)
 		return
 	}

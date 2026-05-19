@@ -9,8 +9,8 @@ type ContactForm struct {
 
 // ormc:formonly
 type EmailPayload struct {
-	From    string `json:"from"`
-	To      string `json:"to"`
-	Subject string `json:"subject"`
-	Html    string `json:"html"`
+	From    string
+	To      string
+	Subject string
+	Html    string
 }

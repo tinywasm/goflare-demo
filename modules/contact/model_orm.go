@@ -51,3 +51,4 @@ func (s *EmailPayloadList) Append() fmt.Fielder  { v := &EmailPayload{}; *s = ap
 func (m *EmailPayload) Validate(action byte) error {
 	return fmt.ValidateFields(action, m)
 }
+
