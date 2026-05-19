@@ -1,6 +1,4 @@
-.build/
-*.wasm
 .env
-client
-web/server
-*.log
+.build/
+node_modules/
+.DS_Store

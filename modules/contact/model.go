@@ -6,3 +6,11 @@ type ContactForm struct {
 	Email   string `input:"email,required"`
 	Mensaje string `input:"textarea,required,min=10"`
 }
+
+// ormc:formonly
+type EmailPayload struct {
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Html    string `json:"html"`
+}

@@ -3,8 +3,6 @@
 package main
 
 import (
-	"syscall/js"
-
 	"github.com/tinywasm/dom"
 	"github.com/tinywasm/fetch"
 	"github.com/tinywasm/fmt"
@@ -15,12 +13,8 @@ import (
 )
 
 func main() {
-	// Worker URL set in index.html as window.WORKER_URL.
-	// Fallback to "/contact" for local development with proxy.
-	workerURL := js.Global().Get("WORKER_URL").String()
-	if workerURL == "" {
-		workerURL = "/contact"
-	}
+	// Post to relative path /api/contacto (same origin)
+	apiURL := "/api/contacto"
 
 	data := &contact.ContactForm{}
 
@@ -36,7 +30,7 @@ func main() {
 			return err
 		}
 
-		fetch.Post(workerURL).
+		fetch.Post(apiURL).
 			ContentTypeJSON().
 			Body(body).
 			Send(func(resp *fetch.Response, err error) {
