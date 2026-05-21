@@ -2,7 +2,9 @@
 
 package contact
 
-import . "github.com/tinywasm/css"
+import (
+	. "github.com/tinywasm/css"
+)
 
 // SSRInstance is the assetmin discovery entry point — see assetmin/ssr_invoke.go.
 // Returns a zero ContactForm so RenderCSS can be invoked at build time.

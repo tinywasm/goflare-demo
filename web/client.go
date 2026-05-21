@@ -24,10 +24,11 @@ func main() {
 		return
 	}
 
-	f.OnSubmit(func(fielder fmt.Fielder) error {
+	f.OnSubmit(func(fielder fmt.Fielder, done func(error)) {
 		var body []byte
 		if err := json.Encode(data, &body); err != nil {
-			return err
+			done(err)
+			return
 		}
 
 		fetch.Post(apiURL).
@@ -36,12 +37,12 @@ func main() {
 			Send(func(resp *fetch.Response, err error) {
 				if err != nil {
 					dom.Render("result", dom.P("Error: "+err.Error()).Class("error-msg"))
+					done(err)
 					return
 				}
 				dom.Render("result", dom.P("¡Mensaje enviado!").Class("success-msg"))
+				done(nil)
 			})
-
-		return nil
 	})
 
 	container := dom.Div(f, dom.Div().ID("result"))
