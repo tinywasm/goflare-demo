@@ -1,3 +1,5 @@
+github.com/tinywasm/context v0.0.18 h1:uKeiAFo6L/PikGSbUu+xcyELGoa4kXomDNwJOlhxrUE=
+github.com/tinywasm/context v0.0.18/go.mod h1:3AHZHMiiVZljEGNuYMaLM2OXdZ3bXjoMCmqx3sEGXsA=
 github.com/tinywasm/css v0.1.1 h1:KlroB8leRBjDxAZYJ1hR4GNvYE7y1o7e+j48RnW7tO0=
 github.com/tinywasm/css v0.1.1/go.mod h1:8Vio+yx+M8T+cjMUszJeaU1jB+icFrenoa3iGML/G+o=
 github.com/tinywasm/dom v0.9.4 h1:02lighrnJYZi1BNb6OUSq8D2be7iYBVeqiMXYyuMigs=
@@ -10,5 +12,7 @@ github.com/tinywasm/form v0.2.5 h1:q8chJVr1muemG1gpydRCn7TJgnn5L0hp70YfukwWp4U=
 github.com/tinywasm/form v0.2.5/go.mod h1:t+7hzJNh1x88uranCm1YOoQtdradgge7Wp20Qihit84=
 github.com/tinywasm/goflare v0.2.9 h1:a47zo8dDzJZIgs2gXnnHJGBSgGYn27caoJ4RSH7kW9M=
 github.com/tinywasm/goflare v0.2.9/go.mod h1:SVfiN/FQY2nLTh2wZ8zCYHZ8wWJfJsnG2/AfQTaF72s=
+github.com/tinywasm/js v0.0.2 h1:UNNXLKVsxC1+rI+bqZgZFYQXOxXO6oRJw4ocmlNLTQ0=
+github.com/tinywasm/js v0.0.2/go.mod h1:+DFH6df7LU566GHGCmfnAkfUq5SLu860c+ydaKMx73E=
 github.com/tinywasm/json v0.5.2 h1:ykHdD2qz2k+6r+trffNIVHfvdS46Ib+/8tSUKXx+EdY=
 github.com/tinywasm/json v0.5.2/go.mod h1:uA5JXnQcz3T5XdKfwFKloZFvfP7TWgas41zmCM57UJU=

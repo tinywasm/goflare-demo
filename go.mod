@@ -9,5 +9,8 @@ require (
 	github.com/tinywasm/fmt v0.23.9
 	github.com/tinywasm/form v0.2.5
 	github.com/tinywasm/goflare v0.2.9
+	github.com/tinywasm/js v0.0.2
 	github.com/tinywasm/json v0.5.2
 )
+
+require github.com/tinywasm/context v0.0.18 // indirect
