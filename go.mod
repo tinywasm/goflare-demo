@@ -7,7 +7,7 @@ require (
 	github.com/tinywasm/dom v0.9.4
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.23.9
-	github.com/tinywasm/form v0.2.4
+	github.com/tinywasm/form v0.2.5
 	github.com/tinywasm/goflare v0.2.9
 	github.com/tinywasm/json v0.5.2
 )
