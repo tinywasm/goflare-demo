@@ -15,15 +15,40 @@ var _schemaContactForm = []fmt.Field{
 
 func (m *ContactForm) Schema() []fmt.Field { return _schemaContactForm }
 
-func (m *ContactForm) Pointers() []any {
-	return []any{
-		&m.Nombre,
-		&m.Email,
-		&m.Mensaje,
-	}
-}
+func (m *ContactForm) Pointers() []any { return []any{&m.Nombre, &m.Email, &m.Mensaje} }
+
+type ContactFormList []*ContactForm
+
+func (s *ContactFormList) Schema() []fmt.Field { return nil }
+func (s *ContactFormList) Pointers() []any     { return nil }
+func (s *ContactFormList) Len() int             { return len(*s) }
+func (s *ContactFormList) At(i int) fmt.Fielder { return (*s)[i] }
+func (s *ContactFormList) Append() fmt.Fielder  { v := &ContactForm{}; *s = append(*s, v); return v }
 
 func (m *ContactForm) Validate(action byte) error {
+	return fmt.ValidateFields(action, m)
+}
+
+var _schemaEmailPayload = []fmt.Field{
+		{Name: "from", Type: fmt.FieldText, Widget: input.Text()},
+		{Name: "to", Type: fmt.FieldText, Widget: input.Text()},
+		{Name: "subject", Type: fmt.FieldText, Widget: input.Text()},
+		{Name: "html", Type: fmt.FieldText, Widget: input.Text()},
+	}
+
+func (m *EmailPayload) Schema() []fmt.Field { return _schemaEmailPayload }
+
+func (m *EmailPayload) Pointers() []any { return []any{&m.From, &m.To, &m.Subject, &m.Html} }
+
+type EmailPayloadList []*EmailPayload
+
+func (s *EmailPayloadList) Schema() []fmt.Field { return nil }
+func (s *EmailPayloadList) Pointers() []any     { return nil }
+func (s *EmailPayloadList) Len() int             { return len(*s) }
+func (s *EmailPayloadList) At(i int) fmt.Fielder { return (*s)[i] }
+func (s *EmailPayloadList) Append() fmt.Fielder  { v := &EmailPayload{}; *s = append(*s, v); return v }
+
+func (m *EmailPayload) Validate(action byte) error {
 	return fmt.ValidateFields(action, m)
 }
 

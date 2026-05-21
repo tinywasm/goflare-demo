@@ -3,25 +3,15 @@
 package main
 
 import (
-	"compress/gzip"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"strings"
+
+	"github.com/tinywasm/goflare/pages/devserver"
+	"github.com/tinywasm/goflare-demo/routes"
 )
 
-type gzipResponseWriter struct {
-	io.Writer
-	http.ResponseWriter
-}
-
-func (w *gzipResponseWriter) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
-}
-
 // lookupArg returns the value for -key=value or -key value in os.Args.
-// Unknown args are silently ignored — no fatal exit on unrecognized flags.
 func lookupArg(key string) string {
 	prefix := "-" + key + "="
 	args := os.Args[1:]
@@ -39,7 +29,10 @@ func lookupArg(key string) string {
 func main() {
 	port := lookupArg("server_port")
 	if port == "" {
-		port = "6060"
+		port = os.Getenv("PORT")
+	}
+	if port == "" {
+		port = "8080"
 	}
 
 	publicDir := lookupArg("server_public_dir")
@@ -49,45 +42,14 @@ func main() {
 
 	log.Printf("Serving static files from: %s on port %s", publicDir, port)
 
-	fs := http.FileServer(http.Dir(publicDir))
+	r := devserver.NewRouter()
+	routes.Register(r)
 
-	noCache := func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-			w.Header().Set("Pragma", "no-cache")
-			w.Header().Set("Expires", "0")
-			h.ServeHTTP(w, r)
-		})
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
 	}
 
-	gzipHandler := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-				next.ServeHTTP(w, r)
-				return
-			}
-			w.Header().Set("Content-Encoding", "gzip")
-			gz := gzip.NewWriter(w)
-			defer gz.Close()
-			gzw := &gzipResponseWriter{Writer: gz, ResponseWriter: w}
-			next.ServeHTTP(gzw, r)
-		})
-	}
-
-	mux := http.NewServeMux()
-	mux.Handle("/", noCache(gzipHandler(fs)))
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
-	})
-
-	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: mux,
-	}
-
-	log.Printf("Starting server on port %s", port)
-	if err := server.ListenAndServe(); err != nil {
+	if err := devserver.ListenAndServe(port, r, publicDir); err != nil {
 		log.Fatal(err)
 	}
 }

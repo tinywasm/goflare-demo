@@ -3,8 +3,6 @@
 package main
 
 import (
-	"syscall/js"
-
 	"github.com/tinywasm/dom"
 	"github.com/tinywasm/fetch"
 	"github.com/tinywasm/fmt"
@@ -15,12 +13,8 @@ import (
 )
 
 func main() {
-	// Worker URL set in index.html as window.WORKER_URL.
-	// Fallback to "/contact" for local development with proxy.
-	workerURL := js.Global().Get("WORKER_URL").String()
-	if workerURL == "" {
-		workerURL = "/contact"
-	}
+	// Post to relative path /api/contacto (same origin)
+	apiURL := "/api/contacto"
 
 	data := &contact.ContactForm{}
 
@@ -30,27 +24,30 @@ func main() {
 		return
 	}
 
-	f.OnSubmit(func(fielder fmt.Fielder) error {
+	f.OnSubmit(func(fielder fmt.Fielder, done func(error)) {
 		var body []byte
 		if err := json.Encode(data, &body); err != nil {
-			return err
+			done(err)
+			return
 		}
 
-		fetch.Post(workerURL).
+		fetch.Post(apiURL).
 			ContentTypeJSON().
 			Body(body).
 			Send(func(resp *fetch.Response, err error) {
 				if err != nil {
 					dom.Render("result", dom.P("Error: "+err.Error()).Class("error-msg"))
+					done(err)
 					return
 				}
 				dom.Render("result", dom.P("¡Mensaje enviado!").Class("success-msg"))
+				done(nil)
 			})
-
-		return nil
 	})
 
-	if err := dom.Render("app", f); err != nil {
+	container := dom.Div(f, dom.Div().ID("result"))
+
+	if err := dom.Render("app", container); err != nil {
 		fmt.Println("render error:", err)
 		return
 	}
