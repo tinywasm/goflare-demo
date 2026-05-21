@@ -75,6 +75,20 @@ Precondición técnica: `tinywasm/js`, `tinywasm/dom`, `tinywasm/assetmin` y
 go list -m github.com/tinywasm/js github.com/tinywasm/dom github.com/tinywasm/assetmin github.com/tinywasm/site
 ```
 
+## Migración adicional: `ssr.go` → split por extensión (breaking change)
+
+El motor de `assetmin` deja de reconocer `ssr.go` y descubre assets por
+archivos con nombre de extensión (`css.go`, `js.go`, `html.go`, `svg.go`),
+todos `//go:build !wasm`. Ver el stage homónimo en `assetmin/docs/PLAN.md`.
+
+`modules/contact` solo implementa `RenderCSS()`, así que su `ssr.go` se
+**renombra directo a `css.go`** (contenido literal). Como referencia que copian
+los adoptantes, este renombrado debe verse limpio y el README/CHECK_PLAN no
+debe seguir mencionando `ssr.go`.
+
+Precondición: `assetmin` publicado con la whitelist `ssrSourceFiles`. Aplicar
+en el PR coordinado del cambio de motor.
+
 ## Stages
 
 | # | Tarea | Done |
@@ -87,3 +101,7 @@ go list -m github.com/tinywasm/js github.com/tinywasm/dom github.com/tinywasm/as
 | 6 | Screenshot SSR vía MCP browser — sin regresiones | [ ] |
 | 7 | Validar registro de SW vía DevTools si se añadió el ejemplo | [ ] |
 | 8 | Actualizar README/CHECK_PLAN si referencia `SSRInstance` o `RenderJS` | [ ] |
+| 9 | Confirmar precondición: `assetmin` con whitelist `ssrSourceFiles` publicado | [ ] |
+| 10 | Renombrar `modules/contact/ssr.go` → `modules/contact/css.go` | [ ] |
+| 11 | Actualizar README/CHECK_PLAN para no mencionar `ssr.go` | [ ] |
+| 12 | `go build ./...` y screenshot SSR sin regresiones | [ ] |
