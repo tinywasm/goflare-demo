@@ -6,10 +6,6 @@ import (
 	. "github.com/tinywasm/css"
 )
 
-// SSRInstance is the assetmin discovery entry point — see assetmin/ssr_invoke.go.
-// Returns a zero ContactForm so RenderCSS can be invoked at build time.
-func SSRInstance() *ContactForm { return &ContactForm{} }
-
 // RenderCSS produces the styles for the contact form using design tokens
 // from tinywasm/css (theme-aware, light/dark mode automatic).
 //
