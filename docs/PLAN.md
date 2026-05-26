@@ -42,38 +42,38 @@ visitante — ciclo de vida completo demostrado en producción.
 
 ## Stages
 
-### Stage 1 — Modelo `ContactSubmission` con persistencia D1
+### Stage 1 — Modelo `ContactSubmission` con `ormc:form`
 
-Crear `modules/contact/submission.go` (sin build tag — build-agnostic):
+El proyecto genera el glue ORM con `ormc` (igual que `model_orm.go` actual). **No se
+escribe a mano** — eso evita errores en `Schema()`/`Pointers()`/`ModelName()` y genera
+gratis el tipo `ContactSubmissionList` (necesario para `json.Encode`) y el helper
+`ReadAllContactSubmission`.
+
+Añadir a `modules/contact/model.go` el modelo DB-backed (directiva `ormc:form`, no
+`formonly`):
 
 ```go
-package contact
-
-import "github.com/tinywasm/fmt"
-
-// ContactSubmission es el registro persistido en D1.
+// ormc:form
 type ContactSubmission struct {
-	ID      int64
-	Nombre  string
-	Email   string
-	Mensaje string
-}
-
-func (m *ContactSubmission) ModelName() string { return "contact_submissions" }
-
-func (m *ContactSubmission) Schema() []fmt.Field {
-	return []fmt.Field{
-		{Name: "id", PK: true},
-		{Name: "nombre"},
-		{Name: "email"},
-		{Name: "mensaje"},
-	}
-}
-
-func (m *ContactSubmission) Pointers() []any {
-	return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje}
+	ID      int    // auto-detectado como PK auto-increment
+	Nombre  string `input:"required,min=2"`
+	Email   string `input:"email,required"`
+	Mensaje string `input:"textarea,required,min=10"`
 }
 ```
+
+Luego correr `ormc` en el paquete → regenera `model_orm.go` con:
+- `func (m *ContactSubmission) ModelName() string` → `"contact_submission"` (snake_case)
+- `Schema()` con `DB: &fmt.FieldDB{PK: true, AutoInc: true}` en el campo `id`
+- `Pointers()`, `Validate()`
+- `type ContactSubmissionList []*ContactSubmission` (implementa `fmt.FielderSlice`)
+- `func ReadAllContactSubmission(qb *orm.QB) (*ContactSubmissionList, error)`
+
+> **Nota sobre el tipo de `ID`**: usar `int`, no `int64`. `db.Create` omite la PK
+> auto-increment solo cuando el valor es `int(0)` (verificado en `orm/db.go`); con
+> `int64` no se dispararía el skip y se insertaría `id=0` explícito, rompiendo el
+> segundo insert. El test de integración existente (`d1/d1_integration_test.go`) usa
+> `int`.
 
 ### Stage 2 — Acceso D1: `db_wasm.go` y stub `db_host.go`
 
@@ -98,17 +98,15 @@ func saveSubmission(sub *ContactSubmission) error {
 	return db.Create(sub)
 }
 
-func listSubmissions() ([]*ContactSubmission, error) {
+// listSubmissions usa el helper generado por ormc + el query builder real.
+func listSubmissions() (*ContactSubmissionList, error) {
 	db, err := d1.New("DB")
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
-	var rows []*ContactSubmission
-	if err := db.All(&rows); err != nil {
-		return nil, err
-	}
-	return rows, nil
+	qb := db.Query(&ContactSubmission{}).OrderBy("id").Desc()
+	return ReadAllContactSubmission(qb)
 }
 ```
 
@@ -123,8 +121,8 @@ import "errors"
 
 var errHostOnly = errors.New("d1 only available in wasm")
 
-func saveSubmission(_ *ContactSubmission) error         { return errHostOnly }
-func listSubmissions() ([]*ContactSubmission, error) { return nil, errHostOnly }
+func saveSubmission(_ *ContactSubmission) error                 { return errHostOnly }
+func listSubmissions() (*ContactSubmissionList, error) { return nil, errHostOnly }
 ```
 
 ### Stage 3 — Handler POST: persistir en D1
@@ -158,14 +156,16 @@ func HandleList(ctx router.Context) {
 	ctx.SetHeader("Content-Type", "application/json")
 	ctx.SetHeader("Access-Control-Allow-Origin", "*")
 
-	rows, err := listSubmissions()
+	list, err := listSubmissions()
 	if err != nil {
 		ctx.WriteStatus(502)
 		ctx.Write([]byte(`{"error":"db error"}`))
 		return
 	}
-	body, err := json.Encode(rows)
-	if err != nil {
+	// json.Encode(data fmt.Fielder, output any) — output: *[]byte | *string | io.Writer.
+	// ContactSubmissionList implementa fmt.FielderSlice → se serializa como array.
+	var body []byte
+	if err := json.Encode(list, &body); err != nil {
 		ctx.WriteStatus(500)
 		ctx.Write([]byte(`{"error":"encode error"}`))
 		return
@@ -198,7 +198,59 @@ Cloudflare Pages → goflare-demo → Settings → Functions → D1 database bin
 
 Documentar en `docs/CI_D1_SETUP.md` con captura de pantalla.
 
-### Stage 7 — E2E job en `deploy.yml`
+### Stage 7 — Dominio personalizado `goflare-demo.tinywasm.app` (manual, una vez)
+
+El dominio `tinywasm.app` está gestionado en Cloudflare DNS. El subdominio
+`goflare-demo` se configura en dos pasos en el dashboard — ambos desde la misma sesión.
+
+#### Paso 1 — Agregar el dominio al Pages project
+
+```
+Cloudflare Pages → goflare-demo → Custom domains → Add custom domain
+  Domain: goflare-demo.tinywasm.app
+  → Click "Continue"
+```
+
+Cloudflare detectará que `tinywasm.app` está en la misma cuenta y ofrecerá agregar el
+registro DNS automáticamente.
+
+#### Paso 2 — Confirmar el registro DNS
+
+Si Cloudflare lo agrega automáticamente:
+```
+DNS → tinywasm.app → [Cloudflare habrá añadido]
+  Type: CNAME
+  Name: goflare-demo
+  Target: goflare-demo.pages.dev
+  Proxy: ✅ (naranja — proxied)
+```
+
+Si hay que añadirlo manualmente:
+```
+DNS → tinywasm.app → Add record
+  Type:    CNAME
+  Name:    goflare-demo
+  Target:  goflare-demo.pages.dev   ← el subdominio de Pages asignado al proyecto
+  Proxy:   ON  (ícono naranja)
+  TTL:     Auto
+```
+
+El proxy activado permite que Cloudflare sirva el dominio con SSL automático y las
+funciones de Pages (sin proxy, las Pages Functions no funcionan para dominios custom).
+
+#### Verificación
+
+```bash
+curl -I https://goflare-demo.tinywasm.app
+# HTTP/2 200  ← indica que el dominio y el certificado SSL están activos
+```
+
+La propagación tarda entre 1 y 5 minutos tras confirmar en el dashboard.
+
+Documentar en `docs/CI_D1_SETUP.md` junto con el binding D1 (ambos son pasos manuales
+del dashboard que se hacen una sola vez).
+
+### Stage 9 — E2E job en `deploy.yml`
 
 Añadir job `e2e` con `needs: deploy`:
 
@@ -234,7 +286,7 @@ Añadir job `e2e` con `needs: deploy`:
         run: go test -tags=integration -run TestE2E_ContactSubmission ./tests/e2e/ -v
 ```
 
-### Stage 8 — Test `tests/e2e/contact_e2e_test.go`
+### Stage 10 — Test `tests/e2e/contact_e2e_test.go`
 
 ```go
 //go:build integration && !wasm
@@ -245,21 +297,22 @@ import (
 	"os"
 	"testing"
 
+	"github.com/tinywasm/fmt"
 	"github.com/tinywasm/goflare/d1"
-	"github.com/tinywasm/orm"
 )
 
+// contactRow refleja la tabla contact_submission. Schema usa fmt.Field (no orm.Field).
 type contactRow struct {
-	ID      int64
+	ID      int
 	Nombre  string
 	Email   string
 	Mensaje string
 }
 
-func (m *contactRow) ModelName() string { return "contact_submissions" }
-func (m *contactRow) Schema() []orm.Field {
-	return []orm.Field{
-		{Name: "id", PK: true},
+func (m *contactRow) ModelName() string { return "contact_submission" } // = ormc ModelName
+func (m *contactRow) Schema() []fmt.Field {
+	return []fmt.Field{
+		{Name: "id", DB: &fmt.FieldDB{PK: true, AutoInc: true}},
 		{Name: "nombre"},
 		{Name: "email"},
 		{Name: "mensaje"},
@@ -278,14 +331,16 @@ func TestE2E_ContactSubmission(t *testing.T) {
 	}
 	defer db.Close()
 
+	// Query builder real: db.Query(m).Where(col).Eq(v).OrderBy(col).Desc().ReadOne()
 	row := &contactRow{}
-	if err := db.First(row, orm.Where("email", "ci@goflare-demo.test"), orm.OrderBy("id", "DESC")); err != nil {
-		t.Fatalf("CI submission not found in D1: %v", err)
+	err = db.Query(row).Where("email").Eq("ci@goflare-demo.test").OrderBy("id").Desc().ReadOne()
+	if err != nil {
+		t.Fatalf("CI submission not found in D1: %v", err) // orm.ErrNotFound si no existe
 	}
 	if row.Nombre != "CI Test" {
 		t.Errorf("expected Nombre=CI Test, got %q", row.Nombre)
 	}
-	t.Logf("✅ submission ID=%d persisted in D1", row.ID)
+	t.Logf("submission ID=%d persisted in D1", row.ID)
 	// Sin cleanup — los registros persisten para el demo vivo
 }
 
@@ -305,7 +360,8 @@ func requireEnv(t *testing.T, key string) string {
 
 | Archivo | Acción |
 |---|---|
-| `modules/contact/submission.go` | Nuevo — `ContactSubmission` con ORM inline |
+| `modules/contact/model.go` | Editar — añadir `ContactSubmission` con `// ormc:form` (`ID int`) |
+| `modules/contact/model_orm.go` | Regenerado por `ormc` — añade `ContactSubmission*` + `ContactSubmissionList` + `ReadAllContactSubmission` |
 | `modules/contact/db_wasm.go` | Nuevo — `saveSubmission` + `listSubmissions` (d1.New) |
 | `modules/contact/db_host.go` | Nuevo — stubs `!wasm` para compilación host |
 | `modules/contact/handler.go` | Editar — llamar `saveSubmission` tras validar |
@@ -314,18 +370,33 @@ func requireEnv(t *testing.T, key string) string {
 | `web/client.go` | Editar — fetch + render lista de submissions |
 | `.github/workflows/deploy.yml` | Editar — añadir job `e2e` |
 | `tests/e2e/contact_e2e_test.go` | Nuevo — `TestE2E_ContactSubmission` |
-| `docs/CI_D1_SETUP.md` | Nuevo — instrucciones binding D1 en Pages dashboard |
+| `docs/CI_D1_SETUP.md` | Nuevo — instrucciones binding D1 + dominio personalizado en Pages dashboard |
 
 ---
 
 ## Verification
 
 ```bash
+# 1. Regenerar el modelo (tras añadir // ormc:form en model.go)
+ormc
+
+# 2. La dependencia orm es transitiva vía goflare/d1; el test e2e la usa directa
+go get github.com/tinywasm/orm@v0.8.2
+go mod tidy
+
+# 3. Compilación host (los stubs !wasm cubren db_wasm.go)
 go build ./...
 go vet ./...
+
+# 4. Compilación wasm del edge (lo que hace goflare build internamente)
+GOOS=js GOARCH=wasm go build ./edge/
 ```
 
-- `go build` en host compila sin errores (stubs `!wasm` cubren el build-agnostic).
+Checks finales:
+- `ormc` regenera `model_orm.go` con `ContactSubmission`, `ContactSubmissionList` y
+  `ReadAllContactSubmission` — confirmar que `ModelName()` devuelve `"contact_submission"`
+  (si difiere, ajustar el `ModelName()` del `contactRow` en el test e2e para que coincida).
+- `go build ./...` (host) y `GOOS=js GOARCH=wasm go build ./edge/` compilan sin errores.
 - CI deploy job produce `functions/edge.wasm` + `functions/[[path]].mjs`.
-- E2E job: curl POST → 200; `TestE2E_ContactSubmission` → registro en D1 ✅.
+- E2E job: curl POST → 200; `TestE2E_ContactSubmission` encuentra el registro en D1.
 - `goflare-demo.tinywasm.app` muestra la lista de submissions con los registros del CI.
