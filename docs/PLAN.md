@@ -1,79 +1,83 @@
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
 
-# Plan: goflare-demo — Persist contact form submissions to Cloudflare D1
+# Plan: goflare-demo — E2E real: compilar + deploy + D1 persistente
 
-## Context
+## Objetivo
 
-`tinywasm/goflare-demo` (module `github.com/tinywasm/goflare-demo`) is a demo Cloudflare Worker
-built with `github.com/tinywasm/goflare`. It has a contact form (`/api/contacto`) that currently
-validates input and returns a 200 response without persisting anything.
+Convertir goflare-demo en la **prueba de integración pública y permanente de goflare**:
 
-This plan wires the contact form handler to save each submission to a Cloudflare D1 database
-using `github.com/tinywasm/goflare/d1` (ORM adapter) and `github.com/tinywasm/orm`.
+1. El CI compila `edge/main.go` con TinyGo → prueba que el compilador de goflare funciona.
+2. Despliega en Cloudflare Pages → prueba el pipeline de deploy.
+3. Hace un POST real al handler de contacto → el registro se guarda en D1.
+4. Lee el registro de vuelta vía D1 REST → afirma el ciclo completo.
+5. Los registros **persisten en la DB** — el demo vivo en `goflare-demo.tinywasm.app`
+   muestra submissions reales, actuando como evidencia pública de que goflare funciona.
 
-Tests run via `gotest` — no TinyGo installation required.
+### Por qué en goflare-demo y no en goflare
 
-## TinyWasm Constraints (mandatory)
+goflare prueba que la API Go es correcta (tests unitarios); goflare-demo prueba que
+*funciona en producción* con una app real. Separar los repos evita dependencias
+circulares y que un error en el demo bloquee el CI del compilador.
 
-- No `import "errors"`, `"fmt"`, `"strings"` from stdlib — use `github.com/tinywasm/fmt`.
-- Files that use `syscall/js` or D1 (WASM-only APIs) must have `//go:build wasm` as first line.
-- No `database/sql`. D1 is accessed exclusively via `github.com/tinywasm/goflare/d1`.
+### Por qué los registros son permanentes
 
-## Current State
+Un demo que muestra datos reales generados por el propio CI es más valioso que un
+test sintético. Cada corrida del pipeline agrega una submission visible para cualquier
+visitante — ciclo de vida completo demostrado en producción.
 
-| File | Role |
-|---|---|
-| `modules/contact/model.go` | `ContactForm` struct (form-only, `ormc:formonly`) — no DB fields |
-| `modules/contact/model_orm.go` | Auto-generated — Schema + Pointers for ContactForm. **DO NOT EDIT** |
-| `modules/contact/handler.go` | Decodes JSON, validates, returns 200. No persistence. |
-| `go.mod` | Has `github.com/tinywasm/goflare` but NOT `github.com/tinywasm/orm` |
+---
 
-`ContactForm` is `ormc:formonly` — it has no `ID` or `ModelName()`. It must **not** be modified.
-A separate `ContactSubmission` model is introduced for DB persistence.
+## Contexto técnico
 
-## Goal
+- **Modo**: Pages Functions (`edge/main.go` importa `goflare/pages`).
+- **Handler actual**: `POST /api/contacto` parsea el form, valida, retorna 200 pero
+  **no persiste nada en D1** (stub). El bloque de `sendEmail` está comentado.
+- **`ContactForm`**: solo modelo de formulario (`ormc:formonly`). Sin ID ni persistencia.
+- **`d1` package**: solo compila con `//go:build wasm`. El handler es build-agnostic →
+  el acceso a D1 debe ir en un archivo `db_wasm.go` dentro del módulo `contact`.
+- **Binding D1**: configurado en el dashboard de Cloudflare Pages → Settings →
+  Functions → D1 database bindings → nombre del binding: `DB`.
 
-1. Add `ContactSubmission` model implementing `fmt.Model` (with `id` PK).
-2. Add `store_wasm.go` — opens D1 and saves a `ContactSubmission` per form submission.
-3. Update `handler.go` — call `saveSubmission` after validation, before returning 200.
-4. Update `go.mod` — bump `github.com/tinywasm/goflare` to a version that includes `d1/`, add `github.com/tinywasm/orm`.
-
-## D1 Binding Name
-
-The Worker's D1 binding is named **`"DB"`** (configured in `wrangler.toml`). Use the constant
-`d1Binding = "DB"` — never a string literal in logic.
+---
 
 ## Stages
 
-### Stage 1 — `modules/contact/model.go` (edit) + run `ormc`
+### Stage 1 — Modelo `ContactSubmission` con persistencia D1
 
-`ormc` generates `ModelName()`, `Schema()`, `Pointers()`, and `Validate()` automatically.
-**Do NOT write these methods by hand.**
-
-Add `ContactSubmission` to `modules/contact/model.go` with the `// ormc:form` directive
-(DB + Form — generates full CRUD boilerplate):
+Crear `modules/contact/submission.go` (sin build tag — build-agnostic):
 
 ```go
-// ormc:form
+package contact
+
+import "github.com/tinywasm/fmt"
+
+// ContactSubmission es el registro persistido en D1.
 type ContactSubmission struct {
 	ID      int64
 	Nombre  string
 	Email   string
 	Mensaje string
 }
+
+func (m *ContactSubmission) ModelName() string { return "contact_submissions" }
+
+func (m *ContactSubmission) Schema() []fmt.Field {
+	return []fmt.Field{
+		{Name: "id", PK: true},
+		{Name: "nombre"},
+		{Name: "email"},
+		{Name: "mensaje"},
+	}
+}
+
+func (m *ContactSubmission) Pointers() []any {
+	return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje}
+}
 ```
 
-Then run from the module root:
+### Stage 2 — Acceso D1: `db_wasm.go` y stub `db_host.go`
 
-```bash
-ormc
-```
-
-`ormc` will generate/update `model_orm.go` with `ModelName()`, `Schema()`, `Pointers()`,
-`Validate()` for `ContactSubmission`. The existing `ContactForm` entries in `model_orm.go`
-are preserved — `ormc` processes all structs in the file.
-
-### Stage 2 — `modules/contact/store_wasm.go` (new file, `//go:build wasm`)
+**`modules/contact/db_wasm.go`** (`//go:build wasm`):
 
 ```go
 //go:build wasm
@@ -82,75 +86,246 @@ package contact
 
 import "github.com/tinywasm/goflare/d1"
 
-const d1Binding = "DB"
-
-func saveSubmission(form ContactForm) error {
-	db, err := d1.New(d1Binding)
+func saveSubmission(sub *ContactSubmission) error {
+	db, err := d1.New("DB")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-
-	if err := db.CreateTable(&ContactSubmission{}); err != nil {
+	if err := db.CreateTable(sub); err != nil {
 		return err
 	}
+	return db.Create(sub)
+}
 
-	return db.Create(&ContactSubmission{
-		Nombre:  form.Nombre,
-		Email:   form.Email,
-		Mensaje: form.Mensaje,
-	})
+func listSubmissions() ([]*ContactSubmission, error) {
+	db, err := d1.New("DB")
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	var rows []*ContactSubmission
+	if err := db.All(&rows); err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
 ```
 
-### Stage 3 — `modules/contact/handler.go` (edit)
-
-After the `data.Validate(0)` block and before `ctx.WriteStatus(200)`, add:
+**`modules/contact/db_host.go`** (`//go:build !wasm`):
 
 ```go
-if err := saveSubmission(data); err != nil {
-    ctx.WriteStatus(502)
-    ctx.Write([]byte(`{"error":"` + err.Error() + `"}`))
-    return
+//go:build !wasm
+
+package contact
+
+import "errors"
+
+var errHostOnly = errors.New("d1 only available in wasm")
+
+func saveSubmission(_ *ContactSubmission) error         { return errHostOnly }
+func listSubmissions() ([]*ContactSubmission, error) { return nil, errHostOnly }
+```
+
+### Stage 3 — Handler POST: persistir en D1
+
+Editar `modules/contact/handler.go`: tras `data.Validate`, llamar `saveSubmission`:
+
+```go
+sub := &ContactSubmission{Nombre: data.Nombre, Email: data.Email, Mensaje: data.Mensaje}
+if err := saveSubmission(sub); err != nil {
+	ctx.WriteStatus(502)
+	ctx.Write([]byte(`{"error":"db error"}`))
+	return
+}
+ctx.WriteStatus(200)
+ctx.Write([]byte(`{"message":"¡Gracias! Hemos recibido tu solicitud."}`))
+```
+
+### Stage 4 — Ruta GET: listar submissions
+
+**`modules/contact/list_handler.go`** (nuevo, build-agnostic):
+
+```go
+package contact
+
+import (
+	"github.com/tinywasm/goflare/router"
+	"github.com/tinywasm/json"
+)
+
+func HandleList(ctx router.Context) {
+	ctx.SetHeader("Content-Type", "application/json")
+	ctx.SetHeader("Access-Control-Allow-Origin", "*")
+
+	rows, err := listSubmissions()
+	if err != nil {
+		ctx.WriteStatus(502)
+		ctx.Write([]byte(`{"error":"db error"}`))
+		return
+	}
+	body, err := json.Encode(rows)
+	if err != nil {
+		ctx.WriteStatus(500)
+		ctx.Write([]byte(`{"error":"encode error"}`))
+		return
+	}
+	ctx.WriteStatus(200)
+	ctx.Write(body)
 }
 ```
 
-The final handler flow must be:
-1. Check OPTIONS → 204
-2. Check non-POST → 405
-3. Decode JSON → 400 on error
-4. Validate → 422 on error
-5. **saveSubmission → 502 on error** ← new
-6. Return 200
+Registrar en `routes/routes.go`:
 
-Remove the commented-out `sendEmail` block — it is replaced by D1 persistence.
-
-### Stage 4 — `go.mod` (edit)
-
-Run:
-
-```bash
-go get github.com/tinywasm/goflare@latest
-go get github.com/tinywasm/orm@latest
-go mod tidy
+```go
+r.Get("/api/contacto", contact.HandleList)
 ```
 
-`github.com/tinywasm/goflare/d1` is a subpackage of `goflare` — no separate module entry needed.
-`github.com/tinywasm/orm` must be an explicit direct dependency (used in `db_model.go`).
+### Stage 5 — Frontend: mostrar submissions
 
-## Stages Summary
+`web/client.go`: al cargar la página hacer `fetch("/api/contacto")` y renderizar la
+lista debajo del formulario. Mostrar Nombre, email parcialmente oculto
+(`ci***@test.com`), y los primeros 60 chars del Mensaje. Incluir contador:
+"N solicitudes recibidas".
 
-| # | Archivo | Acción |
-|---|---|---|
-| 1 | `modules/contact/model.go` | Agregar struct `ContactSubmission` con `// ormc:form` + correr `ormc` |
-| 2 | `modules/contact/store_wasm.go` | Crear — `saveSubmission` usando `d1.New` + `orm.DB` |
-| 3 | `modules/contact/handler.go` | Editar — llamar `saveSubmission` + eliminar bloque comentado |
-| 4 | `go.mod` | `go get goflare@latest` + `go get orm@latest` + `go mod tidy` |
+### Stage 6 — D1 binding en Cloudflare Pages (manual, una vez)
+
+```
+Cloudflare Pages → goflare-demo → Settings → Functions → D1 database bindings
+  Variable name: DB
+  D1 database:   [la DB ya creada]
+```
+
+Documentar en `docs/CI_D1_SETUP.md` con captura de pantalla.
+
+### Stage 7 — E2E job en `deploy.yml`
+
+Añadir job `e2e` con `needs: deploy`:
+
+```yaml
+  e2e:
+    needs: deploy
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
+      DEMO_URL: https://goflare-demo.tinywasm.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Wait for Pages deployment
+        run: sleep 30
+
+      - name: E2E — POST contact form
+        run: |
+          STATUS=$(curl -s -o /tmp/resp.json -w "%{http_code}" \
+            -X POST "$DEMO_URL/api/contacto" \
+            -H "Content-Type: application/json" \
+            -d '{"nombre":"CI Test","email":"ci@goflare-demo.test","mensaje":"Automated e2e test submission from CI pipeline"}')
+          cat /tmp/resp.json
+          [ "$STATUS" = "200" ] || (echo "Expected 200, got $STATUS" && exit 1)
+
+      - name: E2E — Verify D1 record
+        run: go test -tags=integration -run TestE2E_ContactSubmission ./tests/e2e/ -v
+```
+
+### Stage 8 — Test `tests/e2e/contact_e2e_test.go`
+
+```go
+//go:build integration && !wasm
+
+package e2e_test
+
+import (
+	"os"
+	"testing"
+
+	"github.com/tinywasm/goflare/d1"
+	"github.com/tinywasm/orm"
+)
+
+type contactRow struct {
+	ID      int64
+	Nombre  string
+	Email   string
+	Mensaje string
+}
+
+func (m *contactRow) ModelName() string { return "contact_submissions" }
+func (m *contactRow) Schema() []orm.Field {
+	return []orm.Field{
+		{Name: "id", PK: true},
+		{Name: "nombre"},
+		{Name: "email"},
+		{Name: "mensaje"},
+	}
+}
+func (m *contactRow) Pointers() []any { return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje} }
+
+func TestE2E_ContactSubmission(t *testing.T) {
+	token     := requireEnv(t, "CLOUDFLARE_API_TOKEN")
+	accountID := requireEnv(t, "CLOUDFLARE_ACCOUNT_ID")
+	dbID      := requireEnv(t, "D1_DATABASE_ID")
+
+	db, err := d1.NewDirect(token, accountID, dbID)
+	if err != nil {
+		t.Fatalf("NewDirect: %v", err)
+	}
+	defer db.Close()
+
+	row := &contactRow{}
+	if err := db.First(row, orm.Where("email", "ci@goflare-demo.test"), orm.OrderBy("id", "DESC")); err != nil {
+		t.Fatalf("CI submission not found in D1: %v", err)
+	}
+	if row.Nombre != "CI Test" {
+		t.Errorf("expected Nombre=CI Test, got %q", row.Nombre)
+	}
+	t.Logf("✅ submission ID=%d persisted in D1", row.ID)
+	// Sin cleanup — los registros persisten para el demo vivo
+}
+
+func requireEnv(t *testing.T, key string) string {
+	t.Helper()
+	v := os.Getenv(key)
+	if v == "" {
+		t.Skipf("env var %s not set", key)
+	}
+	return v
+}
+```
+
+---
+
+## Resumen de archivos
+
+| Archivo | Acción |
+|---|---|
+| `modules/contact/submission.go` | Nuevo — `ContactSubmission` con ORM inline |
+| `modules/contact/db_wasm.go` | Nuevo — `saveSubmission` + `listSubmissions` (d1.New) |
+| `modules/contact/db_host.go` | Nuevo — stubs `!wasm` para compilación host |
+| `modules/contact/handler.go` | Editar — llamar `saveSubmission` tras validar |
+| `modules/contact/list_handler.go` | Nuevo — `HandleList` GET /api/contacto |
+| `routes/routes.go` | Editar — añadir `r.Get("/api/contacto", contact.HandleList)` |
+| `web/client.go` | Editar — fetch + render lista de submissions |
+| `.github/workflows/deploy.yml` | Editar — añadir job `e2e` |
+| `tests/e2e/contact_e2e_test.go` | Nuevo — `TestE2E_ContactSubmission` |
+| `docs/CI_D1_SETUP.md` | Nuevo — instrucciones binding D1 en Pages dashboard |
+
+---
 
 ## Verification
 
 ```bash
-gotest
+go build ./...
+go vet ./...
 ```
 
-Sin regresiones. El módulo compila. Los tests de handler existentes deben seguir pasando.
+- `go build` en host compila sin errores (stubs `!wasm` cubren el build-agnostic).
+- CI deploy job produce `functions/edge.wasm` + `functions/[[path]].mjs`.
+- E2E job: curl POST → 200; `TestE2E_ContactSubmission` → registro en D1 ✅.
+- `goflare-demo.tinywasm.app` muestra la lista de submissions con los registros del CI.
