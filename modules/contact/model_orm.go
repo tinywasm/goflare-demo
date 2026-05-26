@@ -4,6 +4,7 @@ package contact
 
 import (
 	"github.com/tinywasm/fmt"
+	"github.com/tinywasm/orm"
 	"github.com/tinywasm/form/input"
 )
 
@@ -27,6 +28,50 @@ func (s *ContactFormList) Append() fmt.Fielder  { v := &ContactForm{}; *s = appe
 
 func (m *ContactForm) Validate(action byte) error {
 	return fmt.ValidateFields(action, m)
+}
+
+func (m *ContactSubmission) ModelName() string {
+	return "contact_submission"
+}
+
+var _schemaContactSubmission = []fmt.Field{
+		{Name: "id", Type: fmt.FieldInt, DB: &fmt.FieldDB{PK: true}, Widget: input.Number()},
+		{Name: "nombre", Type: fmt.FieldText, NotNull: true, Widget: input.Text(), Permitted: fmt.Permitted{Minimum: 2}},
+		{Name: "email", Type: fmt.FieldText, NotNull: true, Widget: input.Email()},
+		{Name: "mensaje", Type: fmt.FieldText, NotNull: true, Widget: input.Textarea(), Permitted: fmt.Permitted{Minimum: 10}},
+	}
+
+func (m *ContactSubmission) Schema() []fmt.Field { return _schemaContactSubmission }
+
+func (m *ContactSubmission) Pointers() []any { return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje} }
+
+type ContactSubmissionList []*ContactSubmission
+
+func (s *ContactSubmissionList) Schema() []fmt.Field { return nil }
+func (s *ContactSubmissionList) Pointers() []any     { return nil }
+func (s *ContactSubmissionList) Len() int             { return len(*s) }
+func (s *ContactSubmissionList) At(i int) fmt.Fielder { return (*s)[i] }
+func (s *ContactSubmissionList) Append() fmt.Fielder  { v := &ContactSubmission{}; *s = append(*s, v); return v }
+
+func (m *ContactSubmission) Validate(action byte) error {
+	return fmt.ValidateFields(action, m)
+}
+
+func ReadOneContactSubmission(qb *orm.QB, model *ContactSubmission) (*ContactSubmission, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllContactSubmission(qb *orm.QB) (*ContactSubmissionList, error) {
+	var results ContactSubmissionList
+	err := qb.ReadAll(
+		func() fmt.Model { return &ContactSubmission{} },
+		func(m fmt.Model) { results = append(results, m.(*ContactSubmission)) },
+	)
+	return &results, err
 }
 
 var _schemaEmailPayload = []fmt.Field{

@@ -11,6 +11,11 @@ require (
 	github.com/tinywasm/goflare v0.2.13
 	github.com/tinywasm/js v0.0.3
 	github.com/tinywasm/json v0.5.2
+	github.com/tinywasm/orm v0.8.2
 )
 
-require github.com/tinywasm/context v0.0.18 // indirect
+require (
+	github.com/tinywasm/context v0.0.18 // indirect
+	github.com/tinywasm/jsvalue v0.0.12 // indirect
+	github.com/tinywasm/sqlt v0.0.2 // indirect
+)

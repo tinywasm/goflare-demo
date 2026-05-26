@@ -35,11 +35,12 @@ func Handle(ctx router.Context) {
 		return
 	}
 
-	/* 	if err := sendEmail(data, cloudflare.Env("RESEND_API_KEY")); err != nil {
+	sub := &ContactSubmission{Nombre: data.Nombre, Email: data.Email, Mensaje: data.Mensaje}
+	if err := saveSubmission(sub); err != nil {
 		ctx.WriteStatus(502)
-		ctx.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		ctx.Write([]byte(`{"error":"db error"}`))
 		return
-	} */
+	}
 
 	ctx.WriteStatus(200)
 	ctx.Write([]byte(`{"message":"¡Gracias! Hemos recibido tu solicitud."}`))

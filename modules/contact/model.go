@@ -7,6 +7,14 @@ type ContactForm struct {
 	Mensaje string `input:"textarea,required,min=10"`
 }
 
+// ormc:form
+type ContactSubmission struct {
+	ID      int    `orm:"pk,autoinc"`
+	Nombre  string `input:"required,min=2"`
+	Email   string `input:"email,required"`
+	Mensaje string `input:"textarea,required,min=10"`
+}
+
 // ormc:formonly
 type EmailPayload struct {
 	From    string

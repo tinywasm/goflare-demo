@@ -7,5 +7,6 @@ import (
 
 func Register(r router.Router) {
 	r.Post("/api/contacto", contact.Handle)
+	r.Get("/api/contacto", contact.HandleList)
 	r.Options("/api/contacto", contact.Handle) // CORS preflight
 }
