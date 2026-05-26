@@ -2,9 +2,39 @@
 
 package contact
 
-import "github.com/tinywasm/fmt"
+import (
+	"os"
 
-var errHostOnly = fmt.Err("d1 only available in wasm")
+	"github.com/tinywasm/goflare/d1"
+	"github.com/tinywasm/orm"
+)
 
-func saveSubmission(_ *Contact) error        { return errHostOnly }
-func listSubmissions() (*ContactList, error) { return nil, errHostOnly }
+func hostDB() (*orm.DB, error) {
+	return d1.NewDirect(
+		os.Getenv("CLOUDFLARE_API_TOKEN"),
+		os.Getenv("CLOUDFLARE_ACCOUNT_ID"),
+		os.Getenv("D1_DATABASE_ID"),
+	)
+}
+
+func saveSubmission(sub *Contact) error {
+	db, err := hostDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	if err := db.CreateTable(sub); err != nil {
+		return err
+	}
+	return db.Create(sub)
+}
+
+func listSubmissions() (*ContactList, error) {
+	db, err := hostDB()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	qb := db.Query(&Contact{}).OrderBy("id").Desc()
+	return ReadAllContact(qb)
+}

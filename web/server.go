@@ -3,31 +3,21 @@
 package main
 
 import (
-	"compress/gzip"
-	"io"
 	"log"
-	"net/http"
 	"os"
-	"strings"
+
+	"github.com/tinywasm/fmt" // NO usar stdlib strings — convención tinywasm
+	"github.com/tinywasm/goflare/devserver"
+	"github.com/tinywasm/goflare-demo/routes"
 )
 
-type gzipResponseWriter struct {
-	io.Writer
-	http.ResponseWriter
-}
-
-func (w *gzipResponseWriter) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
-}
-
-// lookupArg returns the value for -key=value or -key value in os.Args.
-// Unknown args are silently ignored — no fatal exit on unrecognized flags.
+// lookupArg lee -key=value o -key value de os.Args. Usa tinywasm/fmt, no strings.
 func lookupArg(key string) string {
 	prefix := "-" + key + "="
 	args := os.Args[1:]
 	for i, arg := range args {
-		if strings.HasPrefix(arg, prefix) {
-			return strings.TrimPrefix(arg, prefix)
+		if fmt.HasPrefix(arg, prefix) {
+			return fmt.Convert(arg).TrimPrefix(prefix).String()
 		}
 		if arg == "-"+key && i+1 < len(args) {
 			return args[i+1]
@@ -41,53 +31,16 @@ func main() {
 	if port == "" {
 		port = "6060"
 	}
-
 	publicDir := lookupArg("server_public_dir")
 	if publicDir == "" {
 		publicDir = "web/public"
 	}
 
-	log.Printf("Serving static files from: %s on port %s", publicDir, port)
+	r := devserver.NewRouter()
+	routes.Register(r) // MISMAS rutas/handlers que el edge (edge/main.go)
 
-	fs := http.FileServer(http.Dir(publicDir))
-
-	noCache := func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-			w.Header().Set("Pragma", "no-cache")
-			w.Header().Set("Expires", "0")
-			h.ServeHTTP(w, r)
-		})
-	}
-
-	gzipHandler := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-				next.ServeHTTP(w, r)
-				return
-			}
-			w.Header().Set("Content-Encoding", "gzip")
-			gz := gzip.NewWriter(w)
-			defer gz.Close()
-			gzw := &gzipResponseWriter{Writer: gz, ResponseWriter: w}
-			next.ServeHTTP(gzw, r)
-		})
-	}
-
-	mux := http.NewServeMux()
-	mux.Handle("/", noCache(gzipHandler(fs)))
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
-	})
-
-	server := &http.Server{
-		Addr:    ":" + port,
-		Handler: mux,
-	}
-
-	log.Printf("Starting server on port %s", port)
-	if err := server.ListenAndServe(); err != nil {
+	log.Printf("Dev server on :%s — static: %s, API: /api/*", port, publicDir)
+	if err := devserver.ListenAndServe(":"+port, r, publicDir); err != nil {
 		log.Fatal(err)
 	}
 }
