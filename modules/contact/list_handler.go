@@ -16,7 +16,7 @@ func HandleList(ctx router.Context) {
 		return
 	}
 	// json.Encode(data fmt.Fielder, output any) — output: *[]byte | *string | io.Writer.
-	// ContactSubmissionList implementa fmt.FielderSlice → se serializa como array.
+	// ContactList implementa fmt.FielderSlice → se serializa como array.
 	var body []byte
 	if err := json.Encode(list, &body); err != nil {
 		ctx.WriteStatus(500)

@@ -4,7 +4,7 @@ package contact
 
 import "github.com/tinywasm/goflare/d1"
 
-func saveSubmission(sub *ContactSubmission) error {
+func saveSubmission(sub *Contact) error {
 	db, err := d1.New("DB")
 	if err != nil {
 		return err
@@ -17,12 +17,12 @@ func saveSubmission(sub *ContactSubmission) error {
 }
 
 // listSubmissions usa el helper generado por ormc + el query builder real.
-func listSubmissions() (*ContactSubmissionList, error) {
+func listSubmissions() (*ContactList, error) {
 	db, err := d1.New("DB")
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
-	qb := db.Query(&ContactSubmission{}).OrderBy("id").Desc()
-	return ReadAllContactSubmission(qb)
+	qb := db.Query(&Contact{}).OrderBy("id").Desc()
+	return ReadAllContact(qb)
 }

@@ -42,11 +42,11 @@ visitante — ciclo de vida completo demostrado en producción.
 
 ## Stages
 
-### Stage 1 — Modelo `ContactSubmission` con `ormc:form`
+### Stage 1 — Modelo `Contact` con `ormc:form`
 
 El proyecto genera el glue ORM con `ormc` (igual que `model_orm.go` actual). **No se
 escribe a mano** — eso evita errores en `Schema()`/`Pointers()`/`ModelName()` y genera
-gratis el tipo `ContactSubmissionList` (necesario para `json.Encode`) y el helper
+gratis el tipo `ContactList` (necesario para `json.Encode`) y el helper
 `ReadAllContactSubmission`.
 
 Añadir a `modules/contact/model.go` el modelo DB-backed (directiva `ormc:form`, no
@@ -54,7 +54,7 @@ Añadir a `modules/contact/model.go` el modelo DB-backed (directiva `ormc:form`,
 
 ```go
 // ormc:form
-type ContactSubmission struct {
+type Contact struct {
 	ID      int    // auto-detectado como PK auto-increment
 	Nombre  string `input:"required,min=2"`
 	Email   string `input:"email,required"`
@@ -63,11 +63,11 @@ type ContactSubmission struct {
 ```
 
 Luego correr `ormc` en el paquete → regenera `model_orm.go` con:
-- `func (m *ContactSubmission) ModelName() string` → `"contact_submission"` (snake_case)
+- `func (m *Contact) ModelName() string` → `"contact_submission"` (snake_case)
 - `Schema()` con `DB: &fmt.FieldDB{PK: true, AutoInc: true}` en el campo `id`
 - `Pointers()`, `Validate()`
-- `type ContactSubmissionList []*ContactSubmission` (implementa `fmt.FielderSlice`)
-- `func ReadAllContactSubmission(qb *orm.QB) (*ContactSubmissionList, error)`
+- `type ContactList []*Contact` (implementa `fmt.FielderSlice`)
+- `func ReadAllContactSubmission(qb *orm.QB) (*ContactList, error)`
 
 > **Nota sobre el tipo de `ID`**: usar `int`, no `int64`. `db.Create` omite la PK
 > auto-increment solo cuando el valor es `int(0)` (verificado en `orm/db.go`); con
@@ -86,7 +86,7 @@ package contact
 
 import "github.com/tinywasm/goflare/d1"
 
-func saveSubmission(sub *ContactSubmission) error {
+func saveSubmission(sub *Contact) error {
 	db, err := d1.New("DB")
 	if err != nil {
 		return err
@@ -99,13 +99,13 @@ func saveSubmission(sub *ContactSubmission) error {
 }
 
 // listSubmissions usa el helper generado por ormc + el query builder real.
-func listSubmissions() (*ContactSubmissionList, error) {
+func listSubmissions() (*ContactList, error) {
 	db, err := d1.New("DB")
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
-	qb := db.Query(&ContactSubmission{}).OrderBy("id").Desc()
+	qb := db.Query(&Contact{}).OrderBy("id").Desc()
 	return ReadAllContactSubmission(qb)
 }
 ```
@@ -121,8 +121,8 @@ import "errors"
 
 var errHostOnly = errors.New("d1 only available in wasm")
 
-func saveSubmission(_ *ContactSubmission) error                 { return errHostOnly }
-func listSubmissions() (*ContactSubmissionList, error) { return nil, errHostOnly }
+func saveSubmission(_ *Contact) error                 { return errHostOnly }
+func listSubmissions() (*ContactList, error) { return nil, errHostOnly }
 ```
 
 ### Stage 3 — Handler POST: persistir en D1
@@ -130,7 +130,7 @@ func listSubmissions() (*ContactSubmissionList, error) { return nil, errHostOnly
 Editar `modules/contact/handler.go`: tras `data.Validate`, llamar `saveSubmission`:
 
 ```go
-sub := &ContactSubmission{Nombre: data.Nombre, Email: data.Email, Mensaje: data.Mensaje}
+sub := &Contact{Nombre: data.Nombre, Email: data.Email, Mensaje: data.Mensaje}
 if err := saveSubmission(sub); err != nil {
 	ctx.WriteStatus(502)
 	ctx.Write([]byte(`{"error":"db error"}`))
@@ -163,7 +163,7 @@ func HandleList(ctx router.Context) {
 		return
 	}
 	// json.Encode(data fmt.Fielder, output any) — output: *[]byte | *string | io.Writer.
-	// ContactSubmissionList implementa fmt.FielderSlice → se serializa como array.
+	// ContactList implementa fmt.FielderSlice → se serializa como array.
 	var body []byte
 	if err := json.Encode(list, &body); err != nil {
 		ctx.WriteStatus(500)
@@ -360,8 +360,8 @@ func requireEnv(t *testing.T, key string) string {
 
 | Archivo | Acción |
 |---|---|
-| `modules/contact/model.go` | Editar — añadir `ContactSubmission` con `// ormc:form` (`ID int`) |
-| `modules/contact/model_orm.go` | Regenerado por `ormc` — añade `ContactSubmission*` + `ContactSubmissionList` + `ReadAllContactSubmission` |
+| `modules/contact/model.go` | Editar — añadir `Contact` con `// ormc:form` (`ID int`) |
+| `modules/contact/model_orm.go` | Regenerado por `ormc` — añade `Contact*` + `ContactList` + `ReadAllContactSubmission` |
 | `modules/contact/db_wasm.go` | Nuevo — `saveSubmission` + `listSubmissions` (d1.New) |
 | `modules/contact/db_host.go` | Nuevo — stubs `!wasm` para compilación host |
 | `modules/contact/handler.go` | Editar — llamar `saveSubmission` tras validar |
@@ -393,7 +393,7 @@ GOOS=js GOARCH=wasm go build ./edge/
 ```
 
 Checks finales:
-- `ormc` regenera `model_orm.go` con `ContactSubmission`, `ContactSubmissionList` y
+- `ormc` regenera `model_orm.go` con `Contact`, `ContactList` y
   `ReadAllContactSubmission` — confirmar que `ModelName()` devuelve `"contact_submission"`
   (si difiere, ajustar el `ModelName()` del `contactRow` en el test e2e para que coincida).
 - `go build ./...` (host) y `GOOS=js GOARCH=wasm go build ./edge/` compilan sin errores.

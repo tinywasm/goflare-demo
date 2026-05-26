@@ -18,7 +18,7 @@ func main() {
 	// API endpoint for both POST and GET
 	apiURL := "/api/contacto"
 
-	data := &contact.ContactForm{}
+	data := &contact.Contact{}
 
 	f, err := form.New("app", data)
 	if err != nil {
@@ -32,8 +32,8 @@ func main() {
 				fmt.Println("fetch list error:", err)
 				return
 			}
-			var list contact.ContactSubmissionList
-			if err := json.Decode(resp.Body, &list); err != nil {
+			var list contact.ContactList
+			if err := json.Decode(resp.Body(), &list); err != nil {
 				fmt.Println("decode list error:", err)
 				return
 			}

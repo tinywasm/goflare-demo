@@ -11,7 +11,7 @@ import (
 //
 // This method is //go:build !wasm because tinywasm/css is meant for SSR;
 // the WASM frontend never includes this code so the binary stays minimal.
-func (c *ContactForm) RenderCSS() *Stylesheet {
+func (c *Contact) RenderCSS() *Stylesheet {
 	return NewStylesheet(
 		// Page shell.
 		Rule("body",

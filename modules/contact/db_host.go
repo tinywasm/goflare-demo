@@ -2,9 +2,9 @@
 
 package contact
 
-import "errors"
+import "github.com/tinywasm/fmt"
 
-var errHostOnly = errors.New("d1 only available in wasm")
+var errHostOnly = fmt.Err("d1 only available in wasm")
 
-func saveSubmission(_ *ContactSubmission) error                 { return errHostOnly }
-func listSubmissions() (*ContactSubmissionList, error) { return nil, errHostOnly }
+func saveSubmission(_ *Contact) error        { return errHostOnly }
+func listSubmissions() (*ContactList, error) { return nil, errHostOnly }
