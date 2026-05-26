@@ -37,12 +37,11 @@ idéntico. Lo que pruebas en local es exactamente lo que correrá en el edge.
 
 ## Stages
 
-### Stage 1 — Prerrequisito en goflare (YA HECHO, falta publicar)
+### Stage 1 — Prerrequisito en goflare (HECHO y publicado)
 
 `devserver.ListenAndServe` ya envuelve el servido de estáticos con headers no-cache
-(cambio aplicado + test en `goflare/devserver/`). Solo falta **publicar la versión** de
-goflare y actualizar `go.mod` del demo a esa versión. Sin cambios de código adicionales
-en goflare.
+(cambio + test en `goflare/devserver/`). **Publicado en goflare v0.2.15** y el `go.mod`
+del demo ya apunta a esa versión. No requiere acción adicional.
 
 ### Stage 2 — `web/server.go`: colapsar al dev server de goflare
 
@@ -59,10 +58,27 @@ package main
 
 import (
 	"log"
+	"os"
 
+	"github.com/tinywasm/fmt" // NO usar stdlib strings — convención tinywasm
 	"github.com/tinywasm/goflare/devserver"
 	"github.com/tinywasm/goflare-demo/routes"
 )
+
+// lookupArg lee -key=value o -key value de os.Args. Usa tinywasm/fmt, no strings.
+func lookupArg(key string) string {
+	prefix := "-" + key + "="
+	args := os.Args[1:]
+	for i, arg := range args {
+		if fmt.HasPrefix(arg, prefix) {
+			return fmt.Convert(arg).TrimPrefix(prefix).String()
+		}
+		if arg == "-"+key && i+1 < len(args) {
+			return args[i+1]
+		}
+	}
+	return ""
+}
 
 func main() {
 	port := lookupArg("server_port")
@@ -84,8 +100,10 @@ func main() {
 }
 ```
 
-`lookupArg` se conserva (ya existe en el archivo). El resto del `server.go` actual
-(gzip, noCache, mux) se borra.
+`lookupArg` se reescribe con `tinywasm/fmt` (la versión actual usa `strings`). Se
+**borran** del `server.go` actual: el `struct gzipResponseWriter`, las funcs
+`gzipHandler`/`noCache`, el `http.FileServer` y el `mux`, con sus imports huérfanos
+(`compress/gzip`, `io`, `net/http`, `strings`).
 
 > `routes.Register` es el MISMO que usa el edge ([edge/main.go](../edge/main.go)) → un
 > solo set de rutas y handlers para ambos entornos.
@@ -160,9 +178,9 @@ Verificación (vía MCP, sin compilar a mano — ver [AGENTS.md](../AGENTS.md)):
 
 | Archivo | Acción |
 |---|---|
-| `goflare/devserver/devserver.go` | **YA HECHO** — no-cache en `ListenAndServe` (+ test); falta publicar |
-| `goflare-demo/go.mod` | Actualizar goflare a la versión publicada |
-| `web/server.go` | Colapsar a `devserver.NewRouter()` + `routes.Register` + `ListenAndServe`; borrar gzip/noCache/mux |
+| `goflare/devserver/devserver.go` | **HECHO y publicado** (goflare v0.2.15) — no-cache en `ListenAndServe` + test |
+| `goflare-demo/go.mod` | **HECHO** — ya en goflare v0.2.15 |
+| `web/server.go` | Colapsar a `devserver.NewRouter()` + `routes.Register` + `ListenAndServe`; `lookupArg` con tinywasm/fmt; borrar gzip/noCache/mux/strings |
 | `modules/contact/db_host.go` | D1 real vía `d1.NewDirect` (env vars), espejando `db_wasm.go` |
 
 ---
