@@ -6,7 +6,7 @@ import (
 	"github.com/tinywasm/json"
 )
 
-func sendEmail(data ContactForm, apiKey string) error {
+func sendEmail(data Contact, apiKey string) error {
 	if apiKey == "" {
 		return fmt.Err("RESEND_API_KEY is missing")
 	}

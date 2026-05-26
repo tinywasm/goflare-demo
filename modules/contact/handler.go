@@ -4,7 +4,6 @@ import (
 	//"github.com/tinywasm/goflare/cloudflare"
 
 	"github.com/tinywasm/goflare/router"
-	"github.com/tinywasm/json"
 )
 
 func Handle(ctx router.Context) {
@@ -23,23 +22,19 @@ func Handle(ctx router.Context) {
 		return
 	}
 
-	var data ContactForm
-	if err := json.Decode(ctx.Body(), &data); err != nil {
-		ctx.WriteStatus(400)
-		ctx.Write([]byte(`{"error":"invalid json"}`))
-		return
-	}
-	if err := data.Validate(0); err != nil {
+	// NewContact decodifica + valida + fuerza ID=0 (seguro por construcción).
+	sub, err := NewContact(ctx.Body())
+	if err != nil {
 		ctx.WriteStatus(422)
 		ctx.Write([]byte(`{"error":"` + err.Error() + `"}`))
 		return
 	}
 
-	/* 	if err := sendEmail(data, cloudflare.Env("RESEND_API_KEY")); err != nil {
+	if err := saveSubmission(sub); err != nil {
 		ctx.WriteStatus(502)
-		ctx.Write([]byte(`{"error":"` + err.Error() + `"}`))
+		ctx.Write([]byte(`{"error":"db error"}`))
 		return
-	} */
+	}
 
 	ctx.WriteStatus(200)
 	ctx.Write([]byte(`{"message":"¡Gracias! Hemos recibido tu solicitud."}`))

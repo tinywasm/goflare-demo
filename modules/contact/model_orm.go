@@ -4,29 +4,52 @@ package contact
 
 import (
 	"github.com/tinywasm/fmt"
+	"github.com/tinywasm/orm"
 	"github.com/tinywasm/form/input"
 )
 
-var _schemaContactForm = []fmt.Field{
+func (m *Contact) ModelName() string {
+	return "contact"
+}
+
+var _schemaContact = []fmt.Field{
+		{Name: "id", Type: fmt.FieldInt, DB: &fmt.FieldDB{PK: true, AutoInc: true}, Widget: input.Number()},
 		{Name: "nombre", Type: fmt.FieldText, NotNull: true, Widget: input.Text(), Permitted: fmt.Permitted{Minimum: 2}},
 		{Name: "email", Type: fmt.FieldText, NotNull: true, Widget: input.Email()},
 		{Name: "mensaje", Type: fmt.FieldText, NotNull: true, Widget: input.Textarea(), Permitted: fmt.Permitted{Minimum: 10}},
 	}
 
-func (m *ContactForm) Schema() []fmt.Field { return _schemaContactForm }
+func (m *Contact) Schema() []fmt.Field { return _schemaContact }
 
-func (m *ContactForm) Pointers() []any { return []any{&m.Nombre, &m.Email, &m.Mensaje} }
+func (m *Contact) Pointers() []any { return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje} }
 
-type ContactFormList []*ContactForm
+type ContactList []*Contact
 
-func (s *ContactFormList) Schema() []fmt.Field { return nil }
-func (s *ContactFormList) Pointers() []any     { return nil }
-func (s *ContactFormList) Len() int             { return len(*s) }
-func (s *ContactFormList) At(i int) fmt.Fielder { return (*s)[i] }
-func (s *ContactFormList) Append() fmt.Fielder  { v := &ContactForm{}; *s = append(*s, v); return v }
+func (s *ContactList) Schema() []fmt.Field { return nil }
+func (s *ContactList) Pointers() []any     { return nil }
+func (s *ContactList) Len() int             { return len(*s) }
+func (s *ContactList) At(i int) fmt.Fielder { return (*s)[i] }
+func (s *ContactList) Append() fmt.Fielder  { v := &Contact{}; *s = append(*s, v); return v }
 
-func (m *ContactForm) Validate(action byte) error {
+func (m *Contact) Validate(action byte) error {
 	return fmt.ValidateFields(action, m)
+}
+
+func ReadOneContact(qb *orm.QB, model *Contact) (*Contact, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllContact(qb *orm.QB) (*ContactList, error) {
+	var results ContactList
+	err := qb.ReadAll(
+		func() fmt.Model { return &Contact{} },
+		func(m fmt.Model) { results = append(results, m.(*Contact)) },
+	)
+	return &results, err
 }
 
 var _schemaEmailPayload = []fmt.Field{
