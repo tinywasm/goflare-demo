@@ -15,11 +15,12 @@ devuelve `errHostOnly`. Resultado: no se puede probar la API ni la DB en local.
 
 ## Pieza clave que YA existe
 
-`goflare/pages/devserver` ([devserver.go](../../goflare/pages/devserver/devserver.go),
-`//go:build !wasm`) ya implementa `router.Context` y `router.Router` sobre `net/http`.
-No hay que construir el adaptador — solo conectarlo. Falta exponer su `http.Handler`
-para poder componerlo con el middleware de dev (no-cache, gzip) y el servido de
-estáticos del demo.
+`goflare/devserver` ([devserver.go](../../goflare/devserver/devserver.go),
+`//go:build !wasm`) implementa `router.Context`/`router.Router` sobre `net/http` y
+expone `ListenAndServe(addr, r, staticDir)` que sirve las rutas registradas **y** los
+estáticos. Ya aplica **no-cache** a los estáticos (correcto para dev: tras recompilar,
+el navegador trae el `.wasm` nuevo, no uno cacheado). No hay que construir nada — solo
+conectarlo desde `server.go`.
 
 ## Por qué esto permite probar la DB en local
 
@@ -36,59 +37,60 @@ idéntico. Lo que pruebas en local es exactamente lo que correrá en el edge.
 
 ## Stages
 
-### Stage 1 — goflare: exponer el handler de devserver
+### Stage 1 — Prerrequisito en goflare (YA HECHO, falta publicar)
 
-En `goflare/pages/devserver/devserver.go`, añadir un accesor para componer el mux con
-middleware externo (sin forzar `ListenAndServe`):
+`devserver.ListenAndServe` ya envuelve el servido de estáticos con headers no-cache
+(cambio aplicado + test en `goflare/devserver/`). Solo falta **publicar la versión** de
+goflare y actualizar `go.mod` del demo a esa versión. Sin cambios de código adicionales
+en goflare.
 
-```go
-import "net/http"
+### Stage 2 — `web/server.go`: colapsar al dev server de goflare
 
-// Handler returns the router's configured http.Handler so callers can compose it
-// with their own middleware (no-cache, gzip) and static file serving.
-func Handler(r router.Router) http.Handler {
-	return r.(*nativeRouter).mux
-}
-```
-
-Publicar nueva versión de goflare y actualizar `go.mod` del demo a esa versión.
-
-### Stage 2 — demo `web/server.go`: montar las rutas del edge
-
-Reescribir `main()` para componer: rutas API vía devserver + estáticos con el
-middleware de dev existente. Conservar `lookupArg("server_port")` y
-`lookupArg("server_public_dir")`, y el `noCache`/`gzipHandler` actuales.
+Reescribir `main()` para registrar las rutas del edge y delegar todo (API + estáticos +
+no-cache) a `devserver.ListenAndServe`. Conservar `lookupArg("server_port")` y
+`lookupArg("server_public_dir")`. **Eliminar** el `http.FileServer`, el `gzipHandler` y
+el `noCache` artesanales (el gzip en local no aporta — Cloudflare lo hace en prod; el
+no-cache ahora lo da devserver).
 
 ```go
+//go:build !wasm
+
+package main
+
 import (
-	"net/http"
-	"github.com/tinywasm/goflare/pages/devserver"
+	"log"
+
+	"github.com/tinywasm/goflare/devserver"
 	"github.com/tinywasm/goflare-demo/routes"
 )
 
-// ...dentro de main(), tras resolver port y publicDir...
+func main() {
+	port := lookupArg("server_port")
+	if port == "" {
+		port = "6060"
+	}
+	publicDir := lookupArg("server_public_dir")
+	if publicDir == "" {
+		publicDir = "web/public"
+	}
 
-// 1. Router del edge montado sobre net/http (mismos handlers).
-apiRouter := devserver.NewRouter()
-routes.Register(apiRouter)
+	r := devserver.NewRouter()
+	routes.Register(r) // MISMAS rutas/handlers que el edge (edge/main.go)
 
-mux := http.NewServeMux()
-// 2. Delegar /api/* al handler de devserver (matchea "POST /api/contacto", etc.).
-mux.Handle("/api/", devserver.Handler(apiRouter))
-// 3. El resto: estáticos con no-cache + gzip (igual que hoy).
-mux.Handle("/", noCache(gzipHandler(fs)))
-
-server := &http.Server{Addr: ":" + port, Handler: mux}
-log.Printf("Starting server on port %s", port)
-if err := server.ListenAndServe(); err != nil {
-	log.Fatal(err)
+	log.Printf("Dev server on :%s — static: %s, API: /api/*", port, publicDir)
+	if err := devserver.ListenAndServe(":"+port, r, publicDir); err != nil {
+		log.Fatal(err)
+	}
 }
 ```
+
+`lookupArg` se conserva (ya existe en el archivo). El resto del `server.go` actual
+(gzip, noCache, mux) se borra.
 
 > `routes.Register` es el MISMO que usa el edge ([edge/main.go](../edge/main.go)) → un
 > solo set de rutas y handlers para ambos entornos.
 
-### Stage 3 — demo `db_host.go`: D1 real vía REST
+### Stage 3 — `db_host.go`: D1 real vía REST
 
 Reemplazar los stubs por una implementación que espeja `db_wasm.go`, cambiando solo
 cómo se obtiene el `*orm.DB` (credenciales desde env vars):
@@ -100,7 +102,9 @@ package contact
 
 import (
 	"os"
+
 	"github.com/tinywasm/goflare/d1"
+	"github.com/tinywasm/orm"
 )
 
 func hostDB() (*orm.DB, error) {
@@ -134,8 +138,6 @@ func listSubmissions() (*ContactList, error) {
 }
 ```
 
-(Requiere importar `github.com/tinywasm/orm` para el tipo de retorno de `hostDB`.)
-
 ### Stage 4 — Correr en local con DB
 
 El dev server de tinywasm ejecuta `server.go`. Para que el host alcance la D1, exportar
@@ -158,21 +160,17 @@ Verificación (vía MCP, sin compilar a mano — ver [AGENTS.md](../AGENTS.md)):
 
 | Archivo | Acción |
 |---|---|
-| `goflare/pages/devserver/devserver.go` | **goflare** — añadir `Handler(r) http.Handler`; publicar versión |
+| `goflare/devserver/devserver.go` | **YA HECHO** — no-cache en `ListenAndServe` (+ test); falta publicar |
 | `goflare-demo/go.mod` | Actualizar goflare a la versión publicada |
-| `web/server.go` | Montar `devserver.NewRouter()` + `routes.Register` + `Handler` en `/api/`; estáticos con no-cache/gzip en `/` |
+| `web/server.go` | Colapsar a `devserver.NewRouter()` + `routes.Register` + `ListenAndServe`; borrar gzip/noCache/mux |
 | `modules/contact/db_host.go` | D1 real vía `d1.NewDirect` (env vars), espejando `db_wasm.go` |
 
 ---
 
 ## Verification
 
-```bash
-# host: el dev server auto-compila; verificar con MCP (no go build manual)
-# edge: la compilación wasm sigue usando d1.New (binding) — sin cambios
-```
-
 - POST `/api/contacto` en local → 200 + `{"message":"¡Gracias!..."}` y registro en D1.
 - GET `/api/contacto` en local → array JSON con las submissions reales.
 - El frontend muestra la lista en `localhost:6060` igual que en producción.
 - El edge sigue intacto: `edge/main.go` usa `pages` (wasm) + `d1.New("DB")`.
+- El dev server de tinywasm auto-compila; verificar con el MCP, no con `go build`.
