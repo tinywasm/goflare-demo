@@ -3,54 +3,55 @@
 package e2e_test
 
 import (
+	"encoding/json"
+	"io"
+	"net/http"
 	"os"
 	"testing"
-
-	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/goflare/d1"
 )
 
-// contactRow refleja la tabla contact_submission. Schema usa fmt.Field (no orm.Field).
 type contactRow struct {
-	ID      int
-	Nombre  string
-	Email   string
-	Mensaje string
+	ID      int    `json:"id"`
+	Nombre  string `json:"nombre"`
+	Email   string `json:"email"`
+	Mensaje string `json:"mensaje"`
 }
-
-func (m *contactRow) ModelName() string { return "contact_submission" } // = ormc ModelName
-func (m *contactRow) Schema() []fmt.Field {
-	return []fmt.Field{
-		{Name: "id", DB: &fmt.FieldDB{PK: true, AutoInc: true}},
-		{Name: "nombre"},
-		{Name: "email"},
-		{Name: "mensaje"},
-	}
-}
-func (m *contactRow) Pointers() []any { return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje} }
 
 func TestE2E_ContactSubmission(t *testing.T) {
-	token     := requireEnv(t, "CLOUDFLARE_API_TOKEN")
-	accountID := requireEnv(t, "CLOUDFLARE_ACCOUNT_ID")
-	dbID      := requireEnv(t, "D1_DATABASE_ID")
+	demoURL := requireEnv(t, "DEMO_URL")
 
-	db, err := d1.NewDirect(token, accountID, dbID)
+	resp, err := http.Get(demoURL + "/api/contacto")
 	if err != nil {
-		t.Fatalf("NewDirect: %v", err)
+		t.Fatalf("Failed to GET /api/contacto: %v", err)
 	}
-	defer db.Close()
+	defer resp.Body.Close()
 
-	// Query builder real: db.Query(m).Where(col).Eq(v).OrderBy(col).Desc().ReadOne()
-	row := &contactRow{}
-	err = db.Query(row).Where("email").Eq("ci@goflare-demo.test").OrderBy("id").Desc().ReadOne()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected 200 OK, got status %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		t.Fatalf("CI submission not found in D1: %v", err) // orm.ErrNotFound si no existe
+		t.Fatalf("Failed to read response body: %v", err)
 	}
-	if row.Nombre != "CI Test" {
-		t.Errorf("expected Nombre=CI Test, got %q", row.Nombre)
+
+	var submissions []contactRow
+	if err := json.Unmarshal(body, &submissions); err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v. Body was: %s", err, string(body))
 	}
-	t.Logf("submission ID=%d persisted in D1", row.ID)
-	// Sin cleanup — los registros persisten para el demo vivo
+
+	found := false
+	for _, row := range submissions {
+		if row.Email == "ci@goflare-demo.test" && row.Nombre == "CI Test" {
+			found = true
+			t.Logf("Submission ID=%d persisted in D1 found via HTTP", row.ID)
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("CI submission not found in D1 via GET /api/contacto. Submissions retrieved: %s", string(body))
+	}
 }
 
 func requireEnv(t *testing.T, key string) string {

@@ -5,7 +5,7 @@ package contact
 import "github.com/tinywasm/goflare/d1"
 
 func saveSubmission(sub *Contact) error {
-	db, err := d1.New("DB")
+	db, err := d1.NewEdge("DB")
 	if err != nil {
 		return err
 	}
@@ -18,7 +18,7 @@ func saveSubmission(sub *Contact) error {
 
 // listSubmissions usa el helper generado por ormc + el query builder real.
 func listSubmissions() (*ContactList, error) {
-	db, err := d1.New("DB")
+	db, err := d1.NewEdge("DB")
 	if err != nil {
 		return nil, err
 	}

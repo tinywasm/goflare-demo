@@ -12,7 +12,7 @@ func NewContact(body any) (*Contact, error) {
 		return nil, err
 	}
 	s.ID = 0 // ignora cualquier id provisto por el cliente
-	if err := s.Validate(0); err != nil {
+	if err := s.Validate('c'); err != nil {
 		return nil, err
 	}
 	return s, nil

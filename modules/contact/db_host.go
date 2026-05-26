@@ -3,18 +3,12 @@
 package contact
 
 import (
-	"os"
-
 	"github.com/tinywasm/goflare/d1"
 	"github.com/tinywasm/orm"
 )
 
 func hostDB() (*orm.DB, error) {
-	return d1.NewDirect(
-		os.Getenv("CLOUDFLARE_API_TOKEN"),
-		os.Getenv("CLOUDFLARE_ACCOUNT_ID"),
-		os.Getenv("D1_DATABASE_ID"),
-	)
+	return d1.NewLocal("goflare-local.db")
 }
 
 func saveSubmission(sub *Contact) error {
