@@ -4,6 +4,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Pushes seguidos a main (merge del PR + "chore: sync") lanzarían 2 deploys.
+# Solo interesa desplegar el último commit: cancela runs en curso del mismo ref.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
