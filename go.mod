@@ -11,7 +11,7 @@ require (
 	github.com/tinywasm/goflare v0.2.13
 	github.com/tinywasm/js v0.0.3
 	github.com/tinywasm/json v0.5.2
-	github.com/tinywasm/orm v0.8.2
+	github.com/tinywasm/orm v0.8.3
 )
 
 require (
