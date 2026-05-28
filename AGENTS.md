@@ -78,6 +78,18 @@ All CI/CD configuration lives in **`workflow/spec.go`**. Never edit
 2. `go generate ./workflow/` — regenerates `.github/workflows/deploy.yml`
 3. Commit both `go.mod`, `go.sum`, and the updated `deploy.yml`.
 
+**NEVER use `git tag` + `git push origin vX.Y.Z` alone to publish a goflare release.**
+That creates a git tag without the binary attached to the GitHub Release, causing CI to fail
+with `curl: (22) The requested URL returned error: 404` when trying to download the binary.
+Always publish via `gorelease` (creates tag + compiles + attaches binary in one step).
+If `gorelease` fails with "no tag was created" (nothing to commit), manually build and publish:
+```bash
+GOOS=linux GOARCH=amd64 go build -o /tmp/goflare-linux-amd64 ./cmd/goflare
+git tag vX.Y.Z <commit-sha>
+git push origin vX.Y.Z
+gh release create vX.Y.Z /tmp/goflare-linux-amd64 --title "vX.Y.Z" --notes "..."
+```
+
 **To test CI locally** (requires Docker):
 ```bash
 go test -tags=integration -run TestCIBuild_Docker ./tests/ -v
