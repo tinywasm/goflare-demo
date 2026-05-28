@@ -64,6 +64,27 @@ Since CHECK_PLAN.md Stage 2, `web/server.go` uses `devserver.ListenAndServe` wit
 `routes.Register`, so `/api/contacto` (POST and GET) is served locally at
 `localhost:6060`. A 404 on `/api/*` in local dev is a bug, not expected behavior.
 
+## CI/CD — single source of truth: `workflow/spec.go`
+
+All CI/CD configuration lives in **`workflow/spec.go`**. Never edit
+`.github/workflows/deploy.yml` or the Docker test install steps directly.
+
+- `workflow.InstallScript(version)` — commands to install the `goflare` binary in CI.
+- `workflow.DockerImage` — the container image used for both CI and local tests.
+- `workflow.ReadGoflareVersion(gomodPath)` — reads the goflare version from `go.mod`.
+
+**When goflare version changes:**
+1. `go get github.com/tinywasm/goflare@vX.Y.Z`
+2. `go generate ./workflow/` — regenerates `.github/workflows/deploy.yml`
+3. Commit both `go.mod`, `go.sum`, and the updated `deploy.yml`.
+
+**To test CI locally** (requires Docker):
+```bash
+go test -tags=integration -run TestCIBuild_Docker ./tests/ -v
+```
+The test runs in a non-root Docker container matching the GitHub Actions environment.
+If it passes locally, CI will pass.
+
 ## WASM artifacts: what to commit and what not to
 
 - **Commit** (required by CF Git Integration): `functions/edge.wasm`,
