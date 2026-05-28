@@ -3,15 +3,15 @@
 package main
 
 import (
-	"log"
 	"os"
 
-	"github.com/tinywasm/fmt" // NO usar stdlib strings — convención tinywasm
+	"github.com/tinywasm/fmt"
+	"github.com/tinywasm/goflare/d1"
 	"github.com/tinywasm/goflare/devserver"
+	"github.com/tinywasm/goflare-demo/modules/contact"
 	"github.com/tinywasm/goflare-demo/routes"
 )
 
-// lookupArg lee -key=value o -key value de os.Args. Usa tinywasm/fmt, no strings.
 func lookupArg(key string) string {
 	prefix := "-" + key + "="
 	args := os.Args[1:]
@@ -36,11 +36,23 @@ func main() {
 		publicDir = "web/public"
 	}
 
-	r := devserver.NewRouter()
-	routes.Register(r) // MISMAS rutas/handlers que el edge (edge/main.go)
+	db, err := d1.NewLocal(":memory:")
+	if err != nil {
+		fmt.Println("sqlite:", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+	if err := db.CreateTable(&contact.Contact{}); err != nil {
+		fmt.Println("migrate:", err)
+		os.Exit(1)
+	}
 
-	log.Printf("Dev server on :%s — static: %s, API: /api/*", port, publicDir)
+	r := devserver.NewRouter()
+	routes.Register(r, db)
+
+	fmt.Println("Dev server on :"+port+" — static:", publicDir, "API: /api/*")
 	if err := devserver.ListenAndServe(":"+port, r, publicDir); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
