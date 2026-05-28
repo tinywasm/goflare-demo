@@ -15,33 +15,16 @@ require (
 )
 
 require (
-	al.essio.dev/pkg/shellescape v1.6.0 // indirect
-	github.com/danieljoos/wincred v1.2.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/tdewolff/minify/v2 v2.24.12 // indirect
-	github.com/tdewolff/parse/v2 v2.8.11 // indirect
-	github.com/tinywasm/assetmin v0.3.5 // indirect
-	github.com/tinywasm/client v0.6.13 // indirect
 	github.com/tinywasm/context v0.0.18 // indirect
-	github.com/tinywasm/devflow v0.4.26 // indirect
-	github.com/tinywasm/gobuild v0.0.25 // indirect
-	github.com/tinywasm/gorun v0.0.23 // indirect
 	github.com/tinywasm/jsvalue v0.0.12 // indirect
-	github.com/tinywasm/mcp v0.1.9 // indirect
 	github.com/tinywasm/sqlite v0.2.1 // indirect
 	github.com/tinywasm/sqlt v0.0.2 // indirect
-	github.com/tinywasm/time v0.5.0 // indirect
-	github.com/tinywasm/tinygo v0.0.11 // indirect
-	github.com/tinywasm/unixid v0.2.23 // indirect
-	github.com/tinywasm/wizard v0.0.23 // indirect
-	github.com/zalando/go-keyring v0.2.6 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/term v0.41.0 // indirect
 	modernc.org/libc v1.69.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
