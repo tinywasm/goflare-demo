@@ -23,7 +23,7 @@ jobs:
         # Pre-built binary from GitHub Releases (~2-5s vs ~30-90s for go install).
         # Version read from go.mod — no hardcoding here.
         run: |
-          curl -fsSL https://github.com/tinywasm/goflare/releases/download/v0.2.22/goflare-linux-amd64 -o /usr/local/bin/goflare
+          curl -fsSL https://github.com/tinywasm/goflare/releases/download/v0.2.23/goflare-linux-amd64 -o /usr/local/bin/goflare
           chmod +x /usr/local/bin/goflare
 
       - name: Build

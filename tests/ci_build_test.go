@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -51,6 +52,9 @@ func TestCIBuild_Docker(t *testing.T) {
 	script := strings.Join(steps, " && ")
 
 	cmd := exec.Command("docker", "run", "--rm",
+		// Run as the current user (non-root) to replicate GitHub Actions runner environment.
+		// Without this, Docker defaults to root and masks permission-denied errors in /usr/local.
+		"--user", fmt.Sprintf("%d:%d", os.Getuid(), os.Getgid()),
 		"-v", projectRoot+":/workspace",
 		"-w", "/workspace",
 		workflow.DockerImage,
