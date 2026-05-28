@@ -58,7 +58,7 @@ The tinywasm dev harness does not guarantee that the binary's CWD is the project
 so relative paths fail silently (502 on every request). Use `:memory:` for local dev —
 data is ephemeral per process restart, which is acceptable for a contact form demo.
 
-## API routes are served locally
+## API routes are served locally.
 
 Since CHECK_PLAN.md Stage 2, `web/server.go` uses `devserver.ListenAndServe` with
 `routes.Register`, so `/api/contacto` (POST and GET) is served locally at

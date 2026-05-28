@@ -6,3 +6,4 @@ web/server
 *.log
 *.db
 tmp/
+web/public/client.wasm
