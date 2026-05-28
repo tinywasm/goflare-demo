@@ -5,3 +5,4 @@ node_modules/
 web/server
 *.log
 *.db
+tmp/

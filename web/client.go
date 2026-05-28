@@ -3,8 +3,6 @@
 package main
 
 import (
-	"strings"
-
 	"github.com/tinywasm/dom"
 	"github.com/tinywasm/fetch"
 	"github.com/tinywasm/fmt"
@@ -41,7 +39,7 @@ func main() {
 			items := []dom.Component{}
 			for _, sub := range list {
 				// Partially hide email (e.g. ci***@test.com)
-				emailParts := strings.Split(sub.Email, "@")
+				emailParts := fmt.Split(sub.Email, "@")
 				hiddenEmail := sub.Email
 				if len(emailParts) == 2 {
 					prefix := emailParts[0]
