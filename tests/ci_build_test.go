@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare-demo/internal/workflow"
+	"github.com/tinywasm/goflare-demo/workflow"
 )
 
 // TestCIBuild_Docker replicates the GitHub Actions deploy workflow inside a

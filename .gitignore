@@ -7,3 +7,4 @@ web/server
 *.db
 tmp/
 web/public/client.wasm
+functions/edge.wasm

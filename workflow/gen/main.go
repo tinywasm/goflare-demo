@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/tinywasm/goflare-demo/internal/workflow"
+	"github.com/tinywasm/goflare-demo/workflow"
 )
 
 const deployYML = `name: Deploy to Cloudflare Pages
