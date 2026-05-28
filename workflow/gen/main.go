@@ -47,6 +47,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ "{{" }} secrets.CLOUDFLARE_API_TOKEN {{ "}}" }}
           CLOUDFLARE_ACCOUNT_ID: ${{ "{{" }} secrets.CLOUDFLARE_ACCOUNT_ID {{ "}}" }}
+          PROJECT_NAME: {{.ProjectName}}
         run: goflare deploy
 
   e2e:
@@ -90,6 +91,7 @@ func main() {
 	data := map[string]any{
 		"GoVersion":    goVersion,
 		"InstallLines": lines,
+		"ProjectName":  workflow.ProjectName,
 	}
 
 	tmpl := template.Must(template.New("").Parse(deployYML))

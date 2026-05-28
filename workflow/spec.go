@@ -24,6 +24,11 @@ const (
 	// DockerImage is the container image used for local CI simulation.
 	// Must have Go so TinyGo can invoke 'go' internally.
 	DockerImage = "golang:1.25-bookworm"
+
+	// ProjectName is the Cloudflare Pages project name — used by goflare deploy
+	// to construct the API path /accounts/{id}/pages/projects/{name}/deployments.
+	// Not a secret; safe to hardcode here.
+	ProjectName = "goflare-demo"
 )
 
 // InstallScript returns the shell commands to install goflare from a
