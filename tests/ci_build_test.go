@@ -42,13 +42,20 @@ func TestCIBuild_Docker(t *testing.T) {
 	goflareVersion := readGoflareVersion(t, filepath.Join(projectRoot, "go.mod"))
 	t.Logf("testing goflare %s in Docker", goflareVersion)
 
-	goVersion := readGoVersion(t, filepath.Join(projectRoot, "go.mod"))
+	// Use pre-built binary from GitHub Releases (same as CI workflow intent).
+	// Naming convention: goflare-linux-amd64 (from devflow CrossCompile).
+	binaryURL := "https://github.com/tinywasm/goflare/releases/download/" +
+		goflareVersion + "/goflare-linux-amd64"
 
+	goVersion := readGoVersion(t, filepath.Join(projectRoot, "go.mod"))
+	// Use golang image so TinyGo can invoke 'go' internally during compilation.
+	// We still download the pre-built goflare binary (no 'go install' needed).
 	image := "golang:" + goVersion + "-bookworm"
 
 	script := strings.Join([]string{
 		"set -e",
-		"go install github.com/tinywasm/goflare/cmd/goflare@" + goflareVersion,
+		"curl -fsSL " + binaryURL + " -o /usr/local/bin/goflare",
+		"chmod +x /usr/local/bin/goflare",
 		"goflare build",
 		"echo BUILD_OK",
 	}, " && ")
