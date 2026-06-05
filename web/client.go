@@ -3,10 +3,11 @@
 package main
 
 import (
-	"github.com/tinywasm/dom"
+	. "github.com/tinywasm/dom"
 	"github.com/tinywasm/fetch"
 	"github.com/tinywasm/fmt"
 	"github.com/tinywasm/form"
+	. "github.com/tinywasm/html"
 	"github.com/tinywasm/json"
 
 	"github.com/tinywasm/goflare-demo/modules/contact"
@@ -36,7 +37,7 @@ func main() {
 				return
 			}
 
-			items := []dom.Component{}
+			items := []Component{}
 			for _, sub := range list {
 				// Partially hide email (e.g. ci***@test.com)
 				emailParts := fmt.Split(sub.Email, "@")
@@ -56,10 +57,10 @@ func main() {
 					shortMsg = shortMsg[:57] + "..."
 				}
 
-				items = append(items, dom.Div(
-					dom.Strong(sub.Nombre),
-					dom.Span(" ("+hiddenEmail+"): "),
-					dom.Span(shortMsg),
+				items = append(items, Div(
+					Strong(sub.Nombre),
+					Span(" ("+hiddenEmail+"): "),
+					Span(shortMsg),
 				).Class("submission-item"))
 			}
 
@@ -68,9 +69,9 @@ func main() {
 				listItems[i] = v
 			}
 
-			dom.Render("submissions", dom.Div(
-				dom.H3(fmt.Convert(len(list)).String()+" solicitudes recibidas"),
-				dom.Div(listItems...),
+			Render("submissions", Div(
+				H3(fmt.Convert(len(list)).String()+" solicitudes recibidas"),
+				Div(listItems...),
 			))
 		})
 	}
@@ -87,24 +88,24 @@ func main() {
 			Body(body).
 			Send(func(resp *fetch.Response, err error) {
 				if err != nil {
-					dom.Render("result", dom.P("Error: "+err.Error()).Class("error-msg"))
+					Render("result", P("Error: "+err.Error()).Class("error-msg"))
 					done(err)
 					return
 				}
-				dom.Render("result", dom.P("¡Mensaje enviado!").Class("success-msg"))
+				Render("result", P("¡Mensaje enviado!").Class("success-msg"))
 				renderList()
 				done(nil)
 			})
 	})
 
-	container := dom.Div(
+	container := Div(
 		f,
-		dom.Div().ID("result"),
-		dom.Hr(),
-		dom.Div().ID("submissions"),
+		Div().ID("result"),
+		Hr(),
+		Div().ID("submissions"),
 	)
 
-	if err := dom.Render("app", container); err != nil {
+	if err := Render("app", container); err != nil {
 		fmt.Println("render error:", err)
 		return
 	}
