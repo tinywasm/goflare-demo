@@ -9,9 +9,10 @@ require (
 	github.com/tinywasm/fmt v0.23.10
 	github.com/tinywasm/form v0.2.6
 	github.com/tinywasm/goflare v0.2.26
+	github.com/tinywasm/html v0.0.3
 	github.com/tinywasm/js v0.0.4
 	github.com/tinywasm/json v0.5.2
-	github.com/tinywasm/orm v0.8.3
+	github.com/tinywasm/orm v0.9.0
 )
 
 require (
@@ -21,7 +22,6 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/tinywasm/context v0.0.18 // indirect
-	github.com/tinywasm/html v0.0.3 // indirect
 	github.com/tinywasm/jsvalue v0.0.12 // indirect
 	github.com/tinywasm/sqlite v0.2.1 // indirect
 	github.com/tinywasm/sqlt v0.0.2 // indirect
