@@ -24,7 +24,7 @@ require (
 	github.com/tinywasm/context v0.0.18 // indirect
 	github.com/tinywasm/jsvalue v0.0.12 // indirect
 	github.com/tinywasm/sqlite v0.2.1 // indirect
-	github.com/tinywasm/sqlt v0.0.2 // indirect
+	github.com/tinywasm/sqlt v0.0.3 // indirect
 	golang.org/x/sys v0.42.0 // indirect
 	modernc.org/libc v1.69.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
