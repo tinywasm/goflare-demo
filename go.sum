@@ -22,8 +22,8 @@ github.com/tinywasm/fetch v0.1.24 h1:UynB2NPPgYrwcRx6ZujkRUTlfUUkNs60J0O63/1FmAs
 github.com/tinywasm/fetch v0.1.24/go.mod h1:Hx9bkdjC5fcf++EWjHKUzEn2OZpUbfoXNQV8tbdC5SI=
 github.com/tinywasm/fmt v0.24.0 h1:XH2IofX80pMr4NFgt4KS6Ho0g2m55gPWw9cCfILd6BI=
 github.com/tinywasm/fmt v0.24.0/go.mod h1:L2GCAi6asgytPV6TVvGrRq5Ml+DkUt1Ijo5i/2J1jOY=
-github.com/tinywasm/form v0.2.6 h1:9/lPU922DoSvDruQq8IbSNwzxeE/dxBeZ4ibeandq7I=
-github.com/tinywasm/form v0.2.6/go.mod h1:Mb+9/E1ivVjMUYOKzrw3um7MORaiG1RCD/gb8sGnHe0=
+github.com/tinywasm/form v0.2.7 h1:hhfFc3UgYqzqzn8eVFVEJDd0TVVzFqAPGEAp8mFaUyw=
+github.com/tinywasm/form v0.2.7/go.mod h1:F2UBlBejvPJuoq7stIGOAh+0Uv8mtefB1yiVvuNlM5M=
 github.com/tinywasm/goflare v0.3.6 h1:EGeqLjhSufPbhx3K/ASlnc85Ebz6vkestxBLqv/cP8E=
 github.com/tinywasm/goflare v0.3.6/go.mod h1:2684a9vQ/lsyaRWlj6mtX4am2nMnQQ8/U4l7ni5H0/M=
 github.com/tinywasm/html v0.0.3 h1:hjhBUfXKpHmGW7rk9wjARoeXEZ6cSeVK/e32V36B9kQ=
