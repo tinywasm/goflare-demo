@@ -45,7 +45,7 @@ jobs:
 
           [[d1_databases]]
           binding = "DB"
-          database_name = "goflare-demo"
+          database_name = "d1_test_goflare_db"
           database_id = "${{ vars.D1_DATABASE_ID }}"
           EOF
           # Scope the catch-all function to API routes; serve everything else statically.

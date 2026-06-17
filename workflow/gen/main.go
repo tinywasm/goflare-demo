@@ -59,7 +59,7 @@ jobs:
 
           [[d1_databases]]
           binding = "{{.D1Binding}}"
-          database_name = "{{.ProjectName}}"
+          database_name = "{{.D1DatabaseName}}"
           database_id = "${{ "{{" }} vars.D1_DATABASE_ID {{ "}}" }}"
           EOF
           # Scope the catch-all function to API routes; serve everything else statically.
@@ -110,6 +110,7 @@ func main() {
 		"ProjectName":       workflow.ProjectName,
 		"PublicDir":         workflow.PublicDir,
 		"D1Binding":         workflow.D1Binding,
+		"D1DatabaseName":    workflow.D1DatabaseName,
 		"CompatibilityDate": workflow.CompatibilityDate,
 		"WranglerVersion":   workflow.WranglerVersion,
 		"DemoURL":           workflow.DemoURL,

@@ -35,6 +35,11 @@ const (
 	// D1Binding is the binding name the edge function expects (d1.NewEdge("DB")).
 	D1Binding = "DB"
 
+	// D1DatabaseName is the actual D1 database name in the Cloudflare account.
+	// (Differs from ProjectName: reusing the existing test DB. database_id comes
+	// from the D1_DATABASE_ID GitHub Variable.)
+	D1DatabaseName = "d1_test_goflare_db"
+
 	// CompatibilityDate for the deployed Worker. Recent enough for cloudflare:sockets.
 	CompatibilityDate = "2024-11-01"
 
