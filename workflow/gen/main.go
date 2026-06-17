@@ -43,19 +43,35 @@ jobs:
       - name: Build
         run: goflare build
 
-      - name: Deploy
+      # Option C: goflare builds, wrangler deploys. wrangler owns the Cloudflare
+      # Direct Upload protocol (assets hashing, _worker.bundle, _routes.json, bindings).
+      - name: Deploy (wrangler)
         env:
           CLOUDFLARE_API_TOKEN: ${{ "{{" }} secrets.CLOUDFLARE_API_TOKEN {{ "}}" }}
           CLOUDFLARE_ACCOUNT_ID: ${{ "{{" }} secrets.CLOUDFLARE_ACCOUNT_ID {{ "}}" }}
-          PROJECT_NAME: {{.ProjectName}}
-        run: goflare deploy
+        run: |
+          # wrangler.toml is the source of truth for the Pages project config.
+          # database_id is injected from a GitHub Variable (not committed).
+          cat > wrangler.toml <<'EOF'
+          name = "{{.ProjectName}}"
+          pages_build_output_dir = "{{.PublicDir}}"
+          compatibility_date = "{{.CompatibilityDate}}"
+
+          [[d1_databases]]
+          binding = "{{.D1Binding}}"
+          database_name = "{{.ProjectName}}"
+          database_id = "${{ "{{" }} vars.D1_DATABASE_ID {{ "}}" }}"
+          EOF
+          # Scope the catch-all function to API routes; serve everything else statically.
+          echo '{{.APIRoutes}}' > "{{.PublicDir}}/_routes.json"
+          npx --yes wrangler@{{.WranglerVersion}} pages deploy --branch=main
 
   e2e:
     needs: deploy
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      DEMO_URL: https://goflare-demo.tinywasm.app
+      DEMO_URL: {{.DemoURL}}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -89,9 +105,15 @@ func main() {
 	lines := workflow.InstallScript(version)
 
 	data := map[string]any{
-		"GoVersion":    goVersion,
-		"InstallLines": lines,
-		"ProjectName":  workflow.ProjectName,
+		"GoVersion":         goVersion,
+		"InstallLines":      lines,
+		"ProjectName":       workflow.ProjectName,
+		"PublicDir":         workflow.PublicDir,
+		"D1Binding":         workflow.D1Binding,
+		"CompatibilityDate": workflow.CompatibilityDate,
+		"WranglerVersion":   workflow.WranglerVersion,
+		"DemoURL":           workflow.DemoURL,
+		"APIRoutes":         workflow.APIRoutes,
 	}
 
 	tmpl := template.Must(template.New("").Parse(deployYML))

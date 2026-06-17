@@ -25,10 +25,31 @@ const (
 	// Must have Go so TinyGo can invoke 'go' internally.
 	DockerImage = "golang:1.25-bookworm"
 
-	// ProjectName is the Cloudflare Pages project name — used by goflare deploy
-	// to construct the API path /accounts/{id}/pages/projects/{name}/deployments.
-	// Not a secret; safe to hardcode here.
+	// ProjectName is the Cloudflare Pages project name. Also used as the D1
+	// database name (convention). Not a secret; safe to hardcode here.
 	ProjectName = "goflare-demo"
+
+	// PublicDir is the Pages build output directory (static assets).
+	PublicDir = "web/public"
+
+	// D1Binding is the binding name the edge function expects (d1.NewEdge("DB")).
+	D1Binding = "DB"
+
+	// CompatibilityDate for the deployed Worker. Recent enough for cloudflare:sockets.
+	CompatibilityDate = "2024-11-01"
+
+	// WranglerVersion pins the wrangler major used to deploy (Option C: goflare
+	// builds, wrangler deploys — wrangler owns the Direct Upload protocol).
+	WranglerVersion = "4"
+
+	// DemoURL is the reachable URL the e2e job hits. Uses the deterministic
+	// *.pages.dev domain (the custom domain is a separate, pending concern).
+	DemoURL = "https://goflare-demo.pages.dev"
+
+	// APIRoutes scopes which paths invoke the Worker. Everything else is served
+	// as a static asset (the goflare router 404s on unmatched paths, so the
+	// catch-all function MUST be scoped via _routes.json).
+	APIRoutes = `{"version":1,"include":["/api/*"],"exclude":[]}`
 )
 
 // InstallScript returns the shell commands to install goflare from a
