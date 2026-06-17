@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/goflare/d1"
 	"github.com/tinywasm/goflare/devserver"
+	"github.com/tinywasm/sqlite"
 	"github.com/tinywasm/goflare-demo/modules/contact"
 	"github.com/tinywasm/goflare-demo/routes"
 )
@@ -36,7 +36,7 @@ func main() {
 		publicDir = "web/public"
 	}
 
-	db, err := d1.NewLocal(":memory:")
+	db, err := sqlite.Open(":memory:")
 	if err != nil {
 		fmt.Println("sqlite:", err)
 		os.Exit(1)
