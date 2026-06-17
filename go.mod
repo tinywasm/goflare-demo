@@ -9,7 +9,7 @@ require (
 	github.com/tinywasm/fmt v0.24.0
 	github.com/tinywasm/form v0.2.8
 	github.com/tinywasm/goflare v0.3.6
-	github.com/tinywasm/html v0.0.3
+	github.com/tinywasm/html v0.0.4
 	github.com/tinywasm/js v0.0.4
 	github.com/tinywasm/json v0.5.2
 	github.com/tinywasm/orm v0.9.5
