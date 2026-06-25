@@ -12,7 +12,7 @@ require (
 	github.com/tinywasm/html v0.0.4
 	github.com/tinywasm/js v0.0.4
 	github.com/tinywasm/json v0.5.5
-	github.com/tinywasm/orm v0.9.9
+	github.com/tinywasm/orm v0.9.10
 	github.com/tinywasm/sqlite v0.2.3
 )
 
