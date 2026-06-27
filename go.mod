@@ -24,7 +24,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/tinywasm/context v0.0.18 // indirect
 	github.com/tinywasm/jsvalue v0.0.13 // indirect
-	github.com/tinywasm/sqlt v0.0.3 // indirect
+	github.com/tinywasm/sqlt v0.0.4 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	modernc.org/libc v1.73.4 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
