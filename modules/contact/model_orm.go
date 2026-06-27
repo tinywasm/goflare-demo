@@ -5,6 +5,7 @@ package contact
 import (
 	"github.com/tinywasm/fmt"
 	"github.com/tinywasm/orm"
+	"github.com/tinywasm/form/input"
 )
 
 func (m *Contact) ModelName() string {
@@ -12,10 +13,10 @@ func (m *Contact) ModelName() string {
 }
 
 var _schemaContact = []fmt.Field{
-		{Name: "id", Type: fmt.FieldInt, DB: &fmt.FieldDB{PK: true, AutoInc: true}},
-		{Name: "nombre", Type: fmt.FieldText, NotNull: true, Permitted: fmt.Permitted{Minimum: 2}},
-		{Name: "email", Type: fmt.FieldText, NotNull: true},
-		{Name: "mensaje", Type: fmt.FieldText, NotNull: true, Permitted: fmt.Permitted{Minimum: 10}},
+		{Name: "id", Type: fmt.FieldInt, DB: &fmt.FieldDB{PK: true, AutoInc: true}, Widget: input.Number()},
+		{Name: "nombre", Type: fmt.FieldText, NotNull: true, Widget: input.Text(), Permitted: fmt.Permitted{Minimum: 2}},
+		{Name: "email", Type: fmt.FieldText, NotNull: true, Widget: input.Email()},
+		{Name: "mensaje", Type: fmt.FieldText, NotNull: true, Widget: input.Textarea(), Permitted: fmt.Permitted{Minimum: 10}},
 	}
 
 func (m *Contact) Schema() []fmt.Field { return _schemaContact }
@@ -31,12 +32,11 @@ func (m *Contact) EncodeFields(w fmt.FieldWriter) {
 	w.String("mensaje", m.Mensaje)
 }
 
-func (m *Contact) DecodeFields(r fmt.FieldReader) error {
+func (m *Contact) DecodeFields(r fmt.FieldReader) {
 	if v, ok := r.Int("id"); ok { m.ID = int(v) }
 	if v, ok := r.String("nombre"); ok { m.Nombre = v }
 	if v, ok := r.String("email"); ok { m.Email = v }
 	if v, ok := r.String("mensaje"); ok { m.Mensaje = v }
-	return nil
 }
 
 type ContactList []*Contact
@@ -48,7 +48,7 @@ func (s *ContactList) At(i int) fmt.Fielder { return (*s)[i] }
 func (s *ContactList) Append() fmt.Fielder  { v := &Contact{}; *s = append(*s, v); return v }
 func (s *ContactList) IsNil() bool          { return s == nil }
 func (s *ContactList) EncodeFields(_ fmt.FieldWriter) {}
-func (s *ContactList) DecodeFields(_ fmt.FieldReader) error { return nil }
+func (s *ContactList) DecodeFields(_ fmt.FieldReader) {}
 
 func (m *Contact) Validate(action byte) error {
 	return fmt.ValidateFields(action, m)
@@ -95,12 +95,11 @@ func (m *EmailPayload) EncodeFields(w fmt.FieldWriter) {
 	w.String("html", m.Html)
 }
 
-func (m *EmailPayload) DecodeFields(r fmt.FieldReader) error {
+func (m *EmailPayload) DecodeFields(r fmt.FieldReader) {
 	if v, ok := r.String("from"); ok { m.From = v }
 	if v, ok := r.String("to"); ok { m.To = v }
 	if v, ok := r.String("subject"); ok { m.Subject = v }
 	if v, ok := r.String("html"); ok { m.Html = v }
-	return nil
 }
 
 type EmailPayloadList []*EmailPayload
@@ -112,5 +111,5 @@ func (s *EmailPayloadList) At(i int) fmt.Fielder { return (*s)[i] }
 func (s *EmailPayloadList) Append() fmt.Fielder  { v := &EmailPayload{}; *s = append(*s, v); return v }
 func (s *EmailPayloadList) IsNil() bool          { return s == nil }
 func (s *EmailPayloadList) EncodeFields(_ fmt.FieldWriter) {}
-func (s *EmailPayloadList) DecodeFields(_ fmt.FieldReader) error { return nil }
+func (s *EmailPayloadList) DecodeFields(_ fmt.FieldReader) {}
 

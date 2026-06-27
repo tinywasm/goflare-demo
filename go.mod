@@ -6,13 +6,13 @@ require (
 	github.com/tinywasm/css v0.1.2
 	github.com/tinywasm/dom v0.10.1
 	github.com/tinywasm/fetch v0.1.24
-	github.com/tinywasm/fmt v0.24.4
+	github.com/tinywasm/fmt v0.24.5
 	github.com/tinywasm/form v0.2.9
 	github.com/tinywasm/goflare v0.3.6
 	github.com/tinywasm/html v0.0.4
 	github.com/tinywasm/js v0.0.4
-	github.com/tinywasm/json v0.5.5
-	github.com/tinywasm/orm v0.9.10
+	github.com/tinywasm/json v0.5.6
+	github.com/tinywasm/orm v0.9.12
 	github.com/tinywasm/sqlite v0.2.3
 )
 
