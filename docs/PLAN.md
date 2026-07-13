@@ -16,10 +16,12 @@ message: "feat: migrate to tinywasm/router contract and exercise D1 + router + R
 ## ✅ Compuerta — abierta
 
 Este plan dependía de que `tinywasm/goflare` publicara sus dos etapas (router y archivos).
-**Ya están publicadas en `goflare v0.4.0`** (2026-07-13): trae `goflare/edge`, `goflare/r2`
-y `goflare/files`, y ya **no** trae `goflare/pages` ni `goflare/router`.
+**Ya están publicadas en `goflare v0.4.1`** (2026-07-13): trae `goflare/edge`, `goflare/r2`,
+`goflare/files` y el logging obligatorio del borde (todo 4xx/5xx sale con su causa, y un
+pánico se recupera en vez de tumbar el Worker con un 1101). Ya **no** trae `goflare/pages`
+ni `goflare/router`.
 
-Sube la dependencia a `v0.4.0` o superior en el paso 1. Si tu `go.mod` sigue en `v0.3.6`,
+Sube la dependencia a `v0.4.1` o superior en el paso 1. Si tu `go.mod` sigue en `v0.3.6`,
 los imports de `goflare/edge` no resuelven.
 
 ## Por qué existe este repo

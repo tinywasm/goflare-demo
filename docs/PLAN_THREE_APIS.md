@@ -5,9 +5,10 @@
 > Es la **prueba de aceptación** de todo el trabajo hecho en `tinywasm/goflare`: si las tres
 > APIs no funcionan aquí, no funcionan.
 >
-> **Prerrequisito, ya cumplido:** `goflare` publicó sus dos etapas en **v0.4.0**
-> (2026-07-13). Esa versión trae `goflare/edge`, `goflare/r2` y `goflare/files`, y **ya no
-> trae `goflare/pages` ni `goflare/router`**. Usa `goflare v0.4.0` o superior.
+> **Prerrequisito, ya cumplido:** `goflare` publicó sus dos etapas. Usa **`goflare v0.4.1`
+> o superior** (2026-07-13): trae `goflare/edge`, `goflare/r2`, `goflare/files` y el logging
+> obligatorio del borde con recuperación de pánico, y **ya no** trae `goflare/pages` ni
+> `goflare/router`.
 > Contexto opcional: https://github.com/tinywasm/goflare/blob/main/docs/PLAN.md
 
 Autocontenido, en español.
@@ -128,6 +129,50 @@ Lo que sí es trabajo tuyo:
 Funciona y está verificado. El módulo `contact` sigue siendo la prueba de la primera API.
 Lo único que le cambia es de dónde importa `router`.
 
+### 6. Logs de depuración — para saber qué está pasando en Cloudflare
+
+En el borde **no hay terminal a la que asomarse**: lo único que verás de una petición es lo
+que el código haya impreso. `goflare` **v0.4.1** ya emite el mínimo obligatorio por su cuenta,
+y **eso no lo tienes que escribir tú**:
+
+- todo **4xx** sale con su motivo (un 415 dice *"SVG is not allowed"*, un 403 dice que la
+  ruta no declaró `Public()`),
+- todo **5xx** sale con la causa real (un 502 dice qué falló en R2),
+- y un **pánico se recupera y se registra**: antes tumbaba la instancia wasm y Cloudflare
+  devolvía un **1101** genérico, sin rastro de la causa.
+
+Lo que **sí** añades en el demo son los logs de *seguimiento*, los que cuentan la historia de
+una petición que **va bien**. `goflare` no los emite a propósito (en una librería serían ruido
+en el camino caliente), pero aquí son justo lo que hace falta para ver qué ocurre:
+
+```go
+import "github.com/tinywasm/fmt"   // en wasm, Println → console.log
+
+fmt.Println("demo: upload recibido", len(ctx.Body()), "bytes")
+fmt.Println("demo: clave devuelta", key)
+fmt.Println("demo: sirviendo", key)
+fmt.Println("demo: contacto guardado id", id)
+```
+
+Reglas, cortas y obligatorias:
+
+- **Prefija con `demo:`** para distinguirlos de los de `goflare` de un vistazo.
+- **Nunca imprimas el cuerpo, ni cabeceras, ni cookies.** Imprime *tamaños* y *claves*. Un
+  cuerpo puede llevar datos personales, y los logs se leen y se exportan.
+- **No los quites al terminar.** Este repo es una demo de diagnóstico: su valor es que se
+  pueda ver qué pasa.
+
+**Cómo los lees** (el demo despliega como Pages):
+
+```bash
+npx wrangler pages deployment tail        # logs en vivo del despliegue en producción
+npx wrangler dev                          # en local, salen por la terminal
+```
+
+El `tail` te resuelve la duda más común al cambiar una ruta: si la petición **no aparece**,
+es que Cloudflare la sirvió como estático y **nunca llegó a tu Worker** — mira
+`_routes.json`, no el router.
+
 ---
 
 ## Cómo se prueba (no lo improvises)
@@ -203,6 +248,9 @@ no está conectada: estarías sirviendo HTML ejecutable desde tu propio dominio.
 - `gotest` pasa.
 - No queda ninguna referencia a `github.com/tinywasm/goflare/router` ni a
   `github.com/tinywasm/goflare/pages` en el repo.
+- **Los logs de seguimiento están puestos** y se ven en `wrangler pages deployment tail`:
+  una subida correcta deja rastro (`demo: ...`), y una fallida deja el motivo que emite
+  `goflare` (415 con el tipo real, 502 con el error de R2).
 - **La subida usa `goflare/files`, no una copia.** El demo **no** debe importar
   `tinywasm/filetype` ni `tinywasm/unixid`, ni contener un `r.Put("/api/files/"...)` escrito
   a mano: eso significaría que has duplicado la política de seguridad en vez de consumirla.
