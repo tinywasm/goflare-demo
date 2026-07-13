@@ -5,7 +5,6 @@ package contact
 import (
 	"github.com/tinywasm/model"
 	"github.com/tinywasm/orm"
-	"github.com/tinywasm/form/input"
 )
 
 func (m *Contact) ModelName() string {
@@ -13,10 +12,10 @@ func (m *Contact) ModelName() string {
 }
 
 var _schemaContact = []model.Field{
-		{Name: "id", Type: model.FieldInt, DB: &model.FieldDB{PK: true, AutoInc: true}, Widget: input.Number()},
-		{Name: "nombre", Type: model.FieldText, NotNull: true, Widget: input.Text(), Permitted: model.Permitted{Minimum: 2}},
-		{Name: "email", Type: model.FieldText, NotNull: true, Widget: input.Email()},
-		{Name: "mensaje", Type: model.FieldText, NotNull: true, Widget: input.Textarea(), Permitted: model.Permitted{Minimum: 10}},
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true, AutoInc: true}},
+		{Name: "nombre", Type: model.Text(), NotNull: true, Permitted: model.Permitted{Minimum: 2}},
+		{Name: "email", Type: model.Text(), NotNull: true},
+		{Name: "mensaje", Type: model.Text(), NotNull: true, Permitted: model.Permitted{Minimum: 10}},
 	}
 
 func (m *Contact) Schema() []model.Field { return _schemaContact }
@@ -76,10 +75,10 @@ func (m *EmailPayload) ModelName() string {
 }
 
 var _schemaEmailPayload = []model.Field{
-		{Name: "from", Type: model.FieldText},
-		{Name: "to", Type: model.FieldText},
-		{Name: "subject", Type: model.FieldText},
-		{Name: "html", Type: model.FieldText},
+		{Name: "from", Type: model.Text()},
+		{Name: "to", Type: model.Text()},
+		{Name: "subject", Type: model.Text()},
+		{Name: "html", Type: model.Text()},
 	}
 
 func (m *EmailPayload) Schema() []model.Field { return _schemaEmailPayload }
@@ -112,4 +111,3 @@ func (s *EmailPayloadList) Append() model.Fielder  { v := &EmailPayload{}; *s = 
 func (s *EmailPayloadList) IsNil() bool          { return s == nil }
 func (s *EmailPayloadList) EncodeFields(_ model.FieldWriter) {}
 func (s *EmailPayloadList) DecodeFields(_ model.FieldReader) {}
-

@@ -1,8 +1,9 @@
 package contact
 
 import (
-	"github.com/tinywasm/goflare/router"
+	"github.com/tinywasm/fmt"
 	"github.com/tinywasm/orm"
+	"github.com/tinywasm/router"
 )
 
 func Handle(db *orm.DB) router.HandlerFunc {
@@ -35,6 +36,7 @@ func Handle(db *orm.DB) router.HandlerFunc {
 			ctx.Write([]byte(`{"error":"db error"}`))
 			return
 		}
+		fmt.Println("demo: contacto guardado id", sub.ID)
 
 		ctx.WriteStatus(200)
 		ctx.Write([]byte(`{"message":"¡Gracias! Hemos recibido tu solicitud."}`))
