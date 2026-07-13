@@ -3,7 +3,7 @@
 package contact
 
 import (
-	"github.com/tinywasm/fmt"
+	"github.com/tinywasm/model"
 	"github.com/tinywasm/orm"
 	"github.com/tinywasm/form/input"
 )
@@ -12,27 +12,27 @@ func (m *Contact) ModelName() string {
 	return "contact"
 }
 
-var _schemaContact = []fmt.Field{
-		{Name: "id", Type: fmt.FieldInt, DB: &fmt.FieldDB{PK: true, AutoInc: true}, Widget: input.Number()},
-		{Name: "nombre", Type: fmt.FieldText, NotNull: true, Widget: input.Text(), Permitted: fmt.Permitted{Minimum: 2}},
-		{Name: "email", Type: fmt.FieldText, NotNull: true, Widget: input.Email()},
-		{Name: "mensaje", Type: fmt.FieldText, NotNull: true, Widget: input.Textarea(), Permitted: fmt.Permitted{Minimum: 10}},
+var _schemaContact = []model.Field{
+		{Name: "id", Type: model.FieldInt, DB: &model.FieldDB{PK: true, AutoInc: true}, Widget: input.Number()},
+		{Name: "nombre", Type: model.FieldText, NotNull: true, Widget: input.Text(), Permitted: model.Permitted{Minimum: 2}},
+		{Name: "email", Type: model.FieldText, NotNull: true, Widget: input.Email()},
+		{Name: "mensaje", Type: model.FieldText, NotNull: true, Widget: input.Textarea(), Permitted: model.Permitted{Minimum: 10}},
 	}
 
-func (m *Contact) Schema() []fmt.Field { return _schemaContact }
+func (m *Contact) Schema() []model.Field { return _schemaContact }
 
 func (m *Contact) Pointers() []any { return []any{&m.ID, &m.Nombre, &m.Email, &m.Mensaje} }
 
 func (m *Contact) IsNil() bool { return m == nil }
 
-func (m *Contact) EncodeFields(w fmt.FieldWriter) {
+func (m *Contact) EncodeFields(w model.FieldWriter) {
 	w.Int("id", int64(m.ID))
 	w.String("nombre", m.Nombre)
 	w.String("email", m.Email)
 	w.String("mensaje", m.Mensaje)
 }
 
-func (m *Contact) DecodeFields(r fmt.FieldReader) {
+func (m *Contact) DecodeFields(r model.FieldReader) {
 	if v, ok := r.Int("id"); ok { m.ID = int(v) }
 	if v, ok := r.String("nombre"); ok { m.Nombre = v }
 	if v, ok := r.String("email"); ok { m.Email = v }
@@ -41,17 +41,17 @@ func (m *Contact) DecodeFields(r fmt.FieldReader) {
 
 type ContactList []*Contact
 
-func (s *ContactList) Schema() []fmt.Field { return nil }
+func (s *ContactList) Schema() []model.Field { return nil }
 func (s *ContactList) Pointers() []any     { return nil }
 func (s *ContactList) Len() int             { return len(*s) }
-func (s *ContactList) At(i int) fmt.Fielder { return (*s)[i] }
-func (s *ContactList) Append() fmt.Fielder  { v := &Contact{}; *s = append(*s, v); return v }
+func (s *ContactList) At(i int) model.Fielder { return (*s)[i] }
+func (s *ContactList) Append() model.Fielder  { v := &Contact{}; *s = append(*s, v); return v }
 func (s *ContactList) IsNil() bool          { return s == nil }
-func (s *ContactList) EncodeFields(_ fmt.FieldWriter) {}
-func (s *ContactList) DecodeFields(_ fmt.FieldReader) {}
+func (s *ContactList) EncodeFields(_ model.FieldWriter) {}
+func (s *ContactList) DecodeFields(_ model.FieldReader) {}
 
 func (m *Contact) Validate(action byte) error {
-	return fmt.ValidateFields(action, m)
+	return model.ValidateFields(action, m)
 }
 
 func ReadOneContact(qb *orm.QB, model *Contact) (*Contact, error) {
@@ -62,40 +62,40 @@ func ReadOneContact(qb *orm.QB, model *Contact) (*Contact, error) {
 	return model, nil
 }
 
-func ReadAllContact(qb *orm.QB) (*ContactList, error) {
+func ReadAllContact(qb *orm.QB) (ContactList, error) {
 	var results ContactList
 	err := qb.ReadAll(
-		func() fmt.Model { return &Contact{} },
-		func(m fmt.Model) { results = append(results, m.(*Contact)) },
+		func() model.Model { return &Contact{} },
+		func(m model.Model) { results = append(results, m.(*Contact)) },
 	)
-	return &results, err
+	return results, err
 }
 
 func (m *EmailPayload) ModelName() string {
 	return "email_payload"
 }
 
-var _schemaEmailPayload = []fmt.Field{
-		{Name: "from", Type: fmt.FieldText},
-		{Name: "to", Type: fmt.FieldText},
-		{Name: "subject", Type: fmt.FieldText},
-		{Name: "html", Type: fmt.FieldText},
+var _schemaEmailPayload = []model.Field{
+		{Name: "from", Type: model.FieldText},
+		{Name: "to", Type: model.FieldText},
+		{Name: "subject", Type: model.FieldText},
+		{Name: "html", Type: model.FieldText},
 	}
 
-func (m *EmailPayload) Schema() []fmt.Field { return _schemaEmailPayload }
+func (m *EmailPayload) Schema() []model.Field { return _schemaEmailPayload }
 
 func (m *EmailPayload) Pointers() []any { return []any{&m.From, &m.To, &m.Subject, &m.Html} }
 
 func (m *EmailPayload) IsNil() bool { return m == nil }
 
-func (m *EmailPayload) EncodeFields(w fmt.FieldWriter) {
+func (m *EmailPayload) EncodeFields(w model.FieldWriter) {
 	w.String("from", m.From)
 	w.String("to", m.To)
 	w.String("subject", m.Subject)
 	w.String("html", m.Html)
 }
 
-func (m *EmailPayload) DecodeFields(r fmt.FieldReader) {
+func (m *EmailPayload) DecodeFields(r model.FieldReader) {
 	if v, ok := r.String("from"); ok { m.From = v }
 	if v, ok := r.String("to"); ok { m.To = v }
 	if v, ok := r.String("subject"); ok { m.Subject = v }
@@ -104,12 +104,12 @@ func (m *EmailPayload) DecodeFields(r fmt.FieldReader) {
 
 type EmailPayloadList []*EmailPayload
 
-func (s *EmailPayloadList) Schema() []fmt.Field { return nil }
+func (s *EmailPayloadList) Schema() []model.Field { return nil }
 func (s *EmailPayloadList) Pointers() []any     { return nil }
 func (s *EmailPayloadList) Len() int             { return len(*s) }
-func (s *EmailPayloadList) At(i int) fmt.Fielder { return (*s)[i] }
-func (s *EmailPayloadList) Append() fmt.Fielder  { v := &EmailPayload{}; *s = append(*s, v); return v }
+func (s *EmailPayloadList) At(i int) model.Fielder { return (*s)[i] }
+func (s *EmailPayloadList) Append() model.Fielder  { v := &EmailPayload{}; *s = append(*s, v); return v }
 func (s *EmailPayloadList) IsNil() bool          { return s == nil }
-func (s *EmailPayloadList) EncodeFields(_ fmt.FieldWriter) {}
-func (s *EmailPayloadList) DecodeFields(_ fmt.FieldReader) {}
+func (s *EmailPayloadList) EncodeFields(_ model.FieldWriter) {}
+func (s *EmailPayloadList) DecodeFields(_ model.FieldReader) {}
 

@@ -62,7 +62,7 @@ data is ephemeral per process restart, which is acceptable for a contact form de
 
 Since CHECK_PLAN.md Stage 2, `web/server.go` uses `devserver.ListenAndServe` with
 `routes.Register`, so `/api/contacto` (POST and GET) is served locally at
-`localhost:6060`. A 404 on `/api/*` in local dev is a bug, not expected behavior.
+`localhost:8080`. A 404 on `/api/*` in local dev is a bug, not expected behavior.
 
 ## CI/CD — single source of truth: `workflow/spec.go`
 

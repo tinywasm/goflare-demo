@@ -2,6 +2,8 @@
 
 package main
 
+import "github.com/tinywasm/model"
+
 import (
 	. "github.com/tinywasm/dom"
 	"github.com/tinywasm/fetch"
@@ -76,7 +78,7 @@ func main() {
 		})
 	}
 
-	f.OnSubmit(func(fielder fmt.Fielder, done func(error)) {
+	f.OnSubmit(func(fielder model.Fielder, done func(error)) {
 		var body []byte
 		if err := json.Encode(data, &body); err != nil {
 			done(err)

@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/goflare/devserver"
-	"github.com/tinywasm/sqlite"
 	"github.com/tinywasm/goflare-demo/modules/contact"
 	"github.com/tinywasm/goflare-demo/routes"
+	"github.com/tinywasm/goflare/devserver"
+	"github.com/tinywasm/sqlite"
 )
 
 func lookupArg(key string) string {
@@ -29,7 +29,7 @@ func lookupArg(key string) string {
 func main() {
 	port := lookupArg("server_port")
 	if port == "" {
-		port = "6060"
+		port = "8080"
 	}
 	publicDir := lookupArg("server_public_dir")
 	if publicDir == "" {

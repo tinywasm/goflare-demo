@@ -1,5 +1,7 @@
 package contact
 
+import "github.com/tinywasm/model"
+
 import (
 	"github.com/tinywasm/goflare/router"
 	"github.com/tinywasm/json"
@@ -18,8 +20,8 @@ func HandleList(db *orm.DB) router.HandlerFunc {
 			ctx.Write([]byte(`{"error":"db error"}`))
 			return
 		}
-		// json.Encode(data fmt.Fielder, output any) — output: *[]byte | *string | io.Writer.
-		// ContactList implementa fmt.FielderSlice → se serializa como array.
+		// json.Encode(data model.Fielder, output any) — output: *[]byte | *string | io.Writer.
+		// ContactList implementa model.FielderSlice → se serializa como array.
 		var body []byte
 		if err := json.Encode(list, &body); err != nil {
 			ctx.WriteStatus(500)
