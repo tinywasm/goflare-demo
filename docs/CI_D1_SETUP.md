@@ -18,6 +18,20 @@ Para que las Pages Functions puedan acceder a la base de datos D1:
 
 *Nota: Repite esto tanto en "Production" como en "Preview" si deseas que ambos entornos funcionen.*
 
+## 1-bis. Bucket R2 (subida de archivos)
+
+El binding `FILES` lo declara `wrangler.toml` (lo genera el workflow desde
+[workflow/spec.go](../workflow/spec.go)), pero **el bucket hay que crearlo una vez**. A
+diferencia de D1, un bucket no tiene id: el nombre *es* la referencia, por eso está en el
+spec y no en una variable de GitHub.
+
+```bash
+npx wrangler r2 bucket create goflare-demo-files
+```
+
+Si el bucket no existe, `r2.NewEdge("FILES")` falla al arrancar y `main()` sale **antes de
+servir nada**: se cae el demo entero, D1 incluido.
+
 ## 2. Dominio Personalizado
 
 Para configurar `goflare-demo.tinywasm.app`:

@@ -13,7 +13,18 @@ import (
 	"github.com/tinywasm/router"
 )
 
+// filesPrefix is where the file routes hang. It MUST end in "/": files.New
+// matches by prefix and the server-generated key is what hangs off it.
+const filesPrefix = "/api/files/"
+
 func main() {
+	// Sin el secreto, la subida denegaría a todo el mundo. Mejor no arrancar que arrancar
+	// roto en silencio.
+	if err := requireToken(); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	db, err := d1.NewEdge("DB")
 	if err != nil {
 		fmt.Println("d1:", err)
@@ -24,7 +35,8 @@ func main() {
 		return
 	}
 
-	r := edge.NewRouter()
+	// La política es del demo: authn dice QUIÉN llama, authorize dice si PUEDE. Ver access.go.
+	r := edge.NewRouter(edge.Config{Authn: authn, Authorize: authorize})
 	routes.Register(r, db)
 
 	bucket, err := r2.NewEdge("FILES")
@@ -32,25 +44,30 @@ func main() {
 		fmt.Println("r2:", err)
 		return
 	}
-	store, err := files.New(bucket, "/api/files/")
+	store, err := files.New(bucket, filesPrefix)
 	if err != nil {
 		fmt.Println("files:", err)
 		return
 	}
 
-	// Logging wrapper for Mount
-	r.Use(func(ctx router.Context, next router.HandlerFunc) {
-		if fmt.HasPrefix(ctx.Path(), "/api/files/") {
-			if ctx.Method() == "PUT" {
-				fmt.Println("demo: upload recibido", len(ctx.Body()), "bytes")
-			} else if ctx.Method() == "GET" {
-				key := ctx.Path()[len("/api/files/"):]
-				if key != "" {
-					fmt.Println("demo: sirviendo", key)
+	// Tracing for the file routes: goflare only logs failures, so a request that
+	// goes WELL leaves no trace. These are the lines that tell that story.
+	// The size comes from the header, not from len(ctx.Body()): reading the body
+	// here would buffer it and defeat the lazy 413 check inside files.upload.
+	r.Use(func(next router.HandlerFunc) router.HandlerFunc {
+		return func(ctx router.Context) {
+			if fmt.HasPrefix(ctx.Path(), filesPrefix) {
+				switch ctx.Method() {
+				case "PUT":
+					fmt.Println("demo: upload recibido", ctx.GetHeader("Content-Length"), "bytes")
+				case "GET":
+					if key := ctx.Path()[len(filesPrefix):]; key != "" {
+						fmt.Println("demo: sirviendo", key)
+					}
 				}
 			}
+			next(ctx)
 		}
-		next(ctx)
 	})
 
 	store.Mount(r)

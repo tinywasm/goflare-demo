@@ -9,12 +9,13 @@ require (
 	github.com/tinywasm/fmt v0.25.3
 	github.com/tinywasm/form v0.2.13
 	github.com/tinywasm/goflare v0.4.1
-	github.com/tinywasm/html v0.0.5
+	github.com/tinywasm/html v0.0.6
 	github.com/tinywasm/js v0.0.4
 	github.com/tinywasm/json v0.5.11
-	github.com/tinywasm/model v0.0.8
+	github.com/tinywasm/model v0.0.13
 	github.com/tinywasm/orm v0.9.27
-	github.com/tinywasm/router v0.1.7
+	github.com/tinywasm/router v0.1.11
+	github.com/tinywasm/server v0.2.30
 	github.com/tinywasm/sqlite v0.2.5
 )
 
@@ -27,9 +28,11 @@ require (
 	github.com/smallstep/truststore v0.13.0 // indirect
 	github.com/tinywasm/context v0.0.18 // indirect
 	github.com/tinywasm/ddlc v0.0.4 // indirect
+	github.com/tinywasm/filetype v0.0.2 // indirect
 	github.com/tinywasm/jsvalue v0.0.15 // indirect
-	github.com/tinywasm/server v0.2.27 // indirect
 	github.com/tinywasm/sqlt v0.0.7 // indirect
+	github.com/tinywasm/time v0.5.0 // indirect
+	github.com/tinywasm/unixid v0.2.23 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
@@ -40,3 +43,5 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.53.0 // indirect
 )
+
+replace github.com/tinywasm/goflare => ../goflare

@@ -36,7 +36,7 @@ func Handle(db *orm.DB) router.HandlerFunc {
 			ctx.Write([]byte(`{"error":"db error"}`))
 			return
 		}
-		fmt.Println("demo: contacto guardado id", sub.ID)
+		fmt.Println("demo: contacto guardado id", sub.Id)
 
 		ctx.WriteStatus(200)
 		ctx.Write([]byte(`{"message":"¡Gracias! Hemos recibido tu solicitud."}`))

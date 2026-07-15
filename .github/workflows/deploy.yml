@@ -23,7 +23,7 @@ jobs:
         # Pre-built binary from GitHub Releases (~2-5s vs ~30-90s for go install).
         # Version read from go.mod — no hardcoding here.
         run: |
-          curl -fsSL https://github.com/tinywasm/goflare/releases/download/v0.3.6/goflare-linux-amd64 -o /usr/local/bin/goflare
+          curl -fsSL https://github.com/tinywasm/goflare/releases/download/v0.4.1/goflare-linux-amd64 -o /usr/local/bin/goflare
           chmod +x /usr/local/bin/goflare
 
       - name: Build
@@ -47,6 +47,12 @@ jobs:
           binding = "DB"
           database_name = "d1_test_goflare_db"
           database_id = "${{ vars.D1_DATABASE_ID }}"
+
+          # A bucket has no id: the name is the reference. r2.NewEdge("FILES")
+          # fails loudly without this, and main() returns before serving anything.
+          [[r2_buckets]]
+          binding = "FILES"
+          bucket_name = "goflare-demo-files"
           EOF
           # Scope the catch-all function to API routes; serve everything else statically.
           echo '{"version":1,"include":["/api/*"],"exclude":[]}' > "web/public/_routes.json"
@@ -78,3 +84,28 @@ jobs:
 
       - name: E2E — Verify D1 record
         run: go test -tags=integration -run TestE2E_ContactSubmission ./tests/e2e/ -v
+
+      # The point of this repo: an image must survive the round trip byte for byte.
+      # cmp is the criterion, not the 201 — a corrupted body still returns 201.
+      - name: E2E — Files round trip (upload, fetch back, compare)
+        run: |
+          printf '\x89PNG\r\n\x1a\n' > foto.png
+          head -c 4096 /dev/urandom >> foto.png
+
+          KEY=$(curl -sf -X PUT "$DEMO_URL/api/files/" \
+            --data-binary @foto.png -H 'Content-Type: image/png')
+          echo "key: $KEY"
+          [ -n "$KEY" ] || (echo "upload returned no key" && exit 1)
+
+          curl -sf -o vuelta.png "$DEMO_URL/api/files/$KEY"
+          cmp foto.png vuelta.png || (echo "the body got corrupted in transit" && exit 1)
+          echo "identica"
+
+      # The Content-Type lies on purpose. A 201 here means the magic-byte check is
+      # not wired: we would be serving executable HTML from our own origin.
+      - name: E2E — Files reject a disguised upload
+        run: |
+          echo '<html><script>alert(1)</script></html>' > malicioso.png
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$DEMO_URL/api/files/" \
+            --data-binary @malicioso.png -H 'Content-Type: image/png')
+          [ "$STATUS" = "415" ] || (echo "Expected 415, got $STATUS" && exit 1)

@@ -40,6 +40,19 @@ const (
 	// from the D1_DATABASE_ID GitHub Variable.)
 	D1DatabaseName = "d1_test_goflare_db"
 
+	// R2Binding is the binding name the edge function expects (r2.NewEdge("FILES")).
+	// Without it, r2.NewEdge fails at startup and main() returns before serving:
+	// the whole demo goes dark, D1 included.
+	R2Binding = "FILES"
+
+	// R2BucketName is the actual R2 bucket in the Cloudflare account. Unlike D1,
+	// a bucket has no id — the name IS the reference, so it is safe to commit.
+	R2BucketName = "goflare-demo-files"
+
+	// FilesPrefix is where goflare/files mounts its two routes. Must end in "/",
+	// and must match the prefix passed to files.New in edge/main.go.
+	FilesPrefix = "/api/files/"
+
 	// CompatibilityDate for the deployed Worker. Recent enough for cloudflare:sockets.
 	CompatibilityDate = "2024-11-01"
 

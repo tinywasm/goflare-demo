@@ -1,27 +1,46 @@
 package contact
 
-// Contact es el ÚNICO modelo del formulario de contacto: dibuja el form,
-// valida la entrada y se persiste en D1. Un solo struct para minimizar binario y
-// evitar estructuras duplicadas.
+import (
+	"github.com/tinywasm/form/input"
+	"github.com/tinywasm/model"
+)
+
+// ContactModel es la ÚNICA fuente de verdad del formulario de contacto: dibuja el
+// form, valida la entrada y se persiste en D1. ormc genera desde aquí el struct
+// Contact y toda su fontanería (Schema/Pointers/codec/Validate/ContactList).
 //
-// El campo ID es seguro por construcción:
-//   - tinywasm/form NO lo renderiza (omite los PK auto-increment del formulario).
-//   - tinywasm/orm lo persiste y deja que D1 lo asigne (AUTOINCREMENT) cuando vale 0.
-//   - el constructor NewContact fuerza ID=0, así un cliente nunca puede inyectarlo
-//     vía JSON (tinywasm/json mapea por nombre de campo y "id" está en el schema).
+// El Kind del campo (el slot `Type:`) es lo único que decide validación y widget:
+//   - input.X() valida Y se renderiza como input en el formulario.
+//   - model.X() solo valida; no aparece en el formulario.
 //
-// ormc:form
-type Contact struct {
-	ID      int    `db:"pk,autoinc"`
-	Nombre  string `input:"required,min=2"`
-	Email   string `input:"email,required"`
-	Mensaje string `input:"textarea,required,min=10"`
+// Por eso el PK lleva model.Int() y no un input: es seguro por construcción —
+// tinywasm/form no le dibuja campo, tinywasm/orm deja que D1 lo asigne
+// (AUTOINCREMENT) cuando vale 0, y NewContact fuerza ID=0 para que un cliente
+// jamás pueda inyectarlo vía JSON.
+var ContactModel = model.Definition{
+	Name: "contact",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true, AutoInc: true}},
+		{Name: "nombre", Type: input.Text(), NotNull: true, Permitted: model.Permitted{Minimum: 2}},
+		{Name: "email", Type: input.Email(), NotNull: true},
+		{Name: "mensaje", Type: input.Textarea(), NotNull: true, Permitted: model.Permitted{Minimum: 10}},
+	},
 }
 
-// ormc:formonly
-type EmailPayload struct {
-	From    string
-	To      string
-	Subject string
-	Html    string
+// EmailPayloadModel es un DTO de transporte hacia la API de Resend: no lleva
+// metadatos DB (no es una tabla) ni inputs (no se dibuja). Existe como Definition
+// porque tinywasm/json solo serializa a través del codec generado: un DTO escrito
+// a mano no puede viajar.
+//
+// Html es model.Raw() a propósito: es marcado que ensamblamos nosotros —con la
+// entrada del usuario ya escapada en sendEmail—, no entrada de red. El whitelist
+// de model.Text() excluye <> y rechazaría nuestro propio HTML.
+var EmailPayloadModel = model.Definition{
+	Name: "email_payload",
+	Fields: model.Fields{
+		{Name: "from", Type: model.Text()},
+		{Name: "to", Type: model.Text()},
+		{Name: "subject", Type: model.Text()},
+		{Name: "html", Type: model.Raw()},
+	},
 }
