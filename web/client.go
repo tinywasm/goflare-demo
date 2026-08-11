@@ -11,6 +11,7 @@ import (
 	"github.com/tinywasm/form"
 	. "github.com/tinywasm/html"
 	"github.com/tinywasm/json"
+	"github.com/tinywasm/unixid"
 	"syscall/js"
 
 	"github.com/tinywasm/goflare-demo/modules/contact"
@@ -23,7 +24,13 @@ func main() {
 
 	data := &contact.Contact{}
 
-	f, err := form.New("app", data)
+	ids, err := unixid.NewUnixID()
+	if err != nil {
+		fmt.Println("unixid error:", err)
+		return
+	}
+
+	f, err := form.New("app", data, ids)
 	if err != nil {
 		fmt.Println("form error:", err)
 		return
