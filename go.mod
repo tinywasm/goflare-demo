@@ -3,16 +3,17 @@ module github.com/tinywasm/goflare-demo
 go 1.25.2
 
 require (
-	github.com/tinywasm/css v0.1.4
+	github.com/tinywasm/css v0.4.11
 	github.com/tinywasm/dom v0.13.5
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.25.5
-	github.com/tinywasm/form v0.2.13
+	github.com/tinywasm/form v0.3.28
 	github.com/tinywasm/goflare v0.4.1
 	github.com/tinywasm/html v0.0.6
+	github.com/tinywasm/input v0.0.2
 	github.com/tinywasm/js v0.0.4
 	github.com/tinywasm/json v0.5.11
-	github.com/tinywasm/model v0.0.15
+	github.com/tinywasm/model v0.1.2
 	github.com/tinywasm/orm v0.9.28
 	github.com/tinywasm/router v0.1.11
 	github.com/tinywasm/server v0.2.30
@@ -26,13 +27,16 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
+	github.com/tinywasm/color v0.1.1 // indirect
 	github.com/tinywasm/context v0.0.18 // indirect
 	github.com/tinywasm/ddlc v0.0.5 // indirect
 	github.com/tinywasm/filetype v0.0.2 // indirect
+	github.com/tinywasm/font v0.0.4 // indirect
 	github.com/tinywasm/jsvalue v0.0.15 // indirect
 	github.com/tinywasm/sqlt v0.0.7 // indirect
 	github.com/tinywasm/time v0.5.0 // indirect
-	github.com/tinywasm/unixid v0.2.23 // indirect
+	github.com/tinywasm/unixid v0.2.26 // indirect
+	github.com/tinywasm/widget v0.6.6 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
