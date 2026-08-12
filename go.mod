@@ -3,7 +3,7 @@ module github.com/tinywasm/goflare-demo
 go 1.25.2
 
 require (
-	github.com/tinywasm/css v0.4.11
+	github.com/tinywasm/css v0.4.12
 	github.com/tinywasm/dom v0.13.5
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.25.5
@@ -18,6 +18,7 @@ require (
 	github.com/tinywasm/router v0.1.11
 	github.com/tinywasm/server v0.2.30
 	github.com/tinywasm/sqlite v0.2.5
+	github.com/tinywasm/unixid v0.2.26
 )
 
 require (
@@ -35,8 +36,7 @@ require (
 	github.com/tinywasm/jsvalue v0.0.15 // indirect
 	github.com/tinywasm/sqlt v0.0.7 // indirect
 	github.com/tinywasm/time v0.5.0 // indirect
-	github.com/tinywasm/unixid v0.2.26 // indirect
-	github.com/tinywasm/widget v0.6.6 // indirect
+	github.com/tinywasm/widget v0.6.8 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
