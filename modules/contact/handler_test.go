@@ -40,7 +40,7 @@ func TestContactCreate_Local(t *testing.T) {
 	if list.Len() != 1 {
 		t.Fatalf("expected 1 row persisted, got %d", list.Len())
 	}
-	if got := (*list)[0]; got.Email != "ci@goflare-demo.test" || got.Nombre != "CI Test" {
+	if got := list[0]; got.Email != "ci@goflare-demo.test" || got.Nombre != "CI Test" {
 		t.Fatalf("unexpected row: %+v", got)
 	}
 }

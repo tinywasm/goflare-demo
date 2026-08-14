@@ -11,7 +11,7 @@ func NewContact(body any) (*Contact, error) {
 	if err := json.Decode(body, s); err != nil {
 		return nil, err
 	}
-	s.ID = 0 // ignora cualquier id provisto por el cliente
+	s.Id = 0 // ignora cualquier id provisto por el cliente
 	if err := s.Validate('c'); err != nil {
 		return nil, err
 	}

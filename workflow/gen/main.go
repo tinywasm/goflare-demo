@@ -61,6 +61,12 @@ jobs:
           binding = "{{.D1Binding}}"
           database_name = "{{.D1DatabaseName}}"
           database_id = "${{ "{{" }} vars.D1_DATABASE_ID {{ "}}" }}"
+
+          # A bucket has no id: the name is the reference. r2.NewEdge("{{.R2Binding}}")
+          # fails loudly without this, and main() returns before serving anything.
+          [[r2_buckets]]
+          binding = "{{.R2Binding}}"
+          bucket_name = "{{.R2BucketName}}"
           EOF
           # Scope the catch-all function to API routes; serve everything else statically.
           echo '{{.APIRoutes}}' > "{{.PublicDir}}/_routes.json"
@@ -92,6 +98,31 @@ jobs:
 
       - name: E2E — Verify D1 record
         run: go test -tags=integration -run TestE2E_ContactSubmission ./tests/e2e/ -v
+
+      # The point of this repo: an image must survive the round trip byte for byte.
+      # cmp is the criterion, not the 201 — a corrupted body still returns 201.
+      - name: E2E — Files round trip (upload, fetch back, compare)
+        run: |
+          printf '\x89PNG\r\n\x1a\n' > foto.png
+          head -c 4096 /dev/urandom >> foto.png
+
+          KEY=$(curl -sf -X PUT "$DEMO_URL{{.FilesPrefix}}" \
+            --data-binary @foto.png -H 'Content-Type: image/png')
+          echo "key: $KEY"
+          [ -n "$KEY" ] || (echo "upload returned no key" && exit 1)
+
+          curl -sf -o vuelta.png "$DEMO_URL{{.FilesPrefix}}$KEY"
+          cmp foto.png vuelta.png || (echo "the body got corrupted in transit" && exit 1)
+          echo "identica"
+
+      # The Content-Type lies on purpose. A 201 here means the magic-byte check is
+      # not wired: we would be serving executable HTML from our own origin.
+      - name: E2E — Files reject a disguised upload
+        run: |
+          echo '<html><script>alert(1)</script></html>' > malicioso.png
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$DEMO_URL{{.FilesPrefix}}" \
+            --data-binary @malicioso.png -H 'Content-Type: image/png')
+          [ "$STATUS" = "415" ] || (echo "Expected 415, got $STATUS" && exit 1)
 `
 
 func main() {
@@ -111,6 +142,9 @@ func main() {
 		"PublicDir":         workflow.PublicDir,
 		"D1Binding":         workflow.D1Binding,
 		"D1DatabaseName":    workflow.D1DatabaseName,
+		"R2Binding":         workflow.R2Binding,
+		"R2BucketName":      workflow.R2BucketName,
+		"FilesPrefix":       workflow.FilesPrefix,
 		"CompatibilityDate": workflow.CompatibilityDate,
 		"WranglerVersion":   workflow.WranglerVersion,
 		"DemoURL":           workflow.DemoURL,

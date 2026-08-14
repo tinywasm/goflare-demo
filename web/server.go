@@ -9,6 +9,7 @@ import (
 	"github.com/tinywasm/goflare-demo/modules/contact"
 	"github.com/tinywasm/goflare-demo/routes"
 	"github.com/tinywasm/goflare/devserver"
+	"github.com/tinywasm/server/httpd"
 	"github.com/tinywasm/sqlite"
 )
 
@@ -47,11 +48,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	r := devserver.NewRouter()
-	routes.Register(r, db)
+	srv := devserver.New(httpd.Config{
+		Port:      port,
+		PublicDir: publicDir,
+	})
+	routes.Register(srv.Router(), db)
 
 	fmt.Println("Dev server on :"+port+" — static:", publicDir, "API: /api/*")
-	if err := devserver.ListenAndServe(":"+port, r, publicDir); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
