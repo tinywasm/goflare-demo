@@ -9,7 +9,7 @@ flowchart TD
     C --> D[goflare build]
     D --> E1[TinyGo: edge/main.go → functions/edge.wasm]
     D --> E2[TinyGo: web/client.go → web/public/client.wasm]
-    D --> E3[AssetMin: script.js + style.css → web/public]
+    D --> E3[sitec: script.js + style.css → web/public]
     E1 & E2 & E3 --> F[goflare deploy]
     F --> G{hasFunctionsArtifacts\nfunctions/*.wasm or *.mjs?}
     G -- Yes --> H[DeployPages only\nUploads web/public + functions/]
