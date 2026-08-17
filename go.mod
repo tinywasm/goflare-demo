@@ -8,7 +8,7 @@ require (
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.25.5
 	github.com/tinywasm/form v0.3.29
-	github.com/tinywasm/goflare v0.4.1
+	github.com/tinywasm/goflare v0.4.2
 	github.com/tinywasm/html v0.0.17
 	github.com/tinywasm/input v0.0.2
 	github.com/tinywasm/js v0.0.4
@@ -28,6 +28,7 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
+	github.com/tinywasm/await v0.1.0 // indirect
 	github.com/tinywasm/color v0.1.1 // indirect
 	github.com/tinywasm/context v0.0.18 // indirect
 	github.com/tinywasm/ddlc v0.0.5 // indirect
@@ -47,5 +48,3 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.53.0 // indirect
 )
-
-replace github.com/tinywasm/goflare => ../goflare

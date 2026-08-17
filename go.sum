@@ -15,6 +15,8 @@ github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec/go.mod h1:qqbHyh8v60DhA7CoWK5oRCqLrMHRGoxYCSS9EjAz6Eo=
 github.com/smallstep/truststore v0.13.0 h1:90if9htAOblavbMeWlqNLnO9bsjjgVv2hQeQJCi/py4=
 github.com/smallstep/truststore v0.13.0/go.mod h1:3tmMp2aLKZ/OA/jnFUB0cYPcho402UG2knuJoPh4j7A=
+github.com/tinywasm/await v0.1.0 h1:keCHZSRPohCGLv+Tm/ovZUwi9oZZX3G3QgUomsNgsxM=
+github.com/tinywasm/await v0.1.0/go.mod h1:7Z60wpqsTfOhy8zVE4kd86ZrFZ97e9Vx4E69Xwgeca8=
 github.com/tinywasm/color v0.1.1 h1:S00T0XR42Q3sDpfJELNnF0HFxMh9gApH4SnA0Ml6Q7A=
 github.com/tinywasm/color v0.1.1/go.mod h1:0wqAVE1k2GxXIX/v1G+w97J8YRpispYcDa7M75H+umI=
 github.com/tinywasm/context v0.0.18 h1:uKeiAFo6L/PikGSbUu+xcyELGoa4kXomDNwJOlhxrUE=
@@ -35,6 +37,8 @@ github.com/tinywasm/font v0.0.4 h1:dugQHev1xk2YzA01xpqV4WLCHxEmk6JEu2GkDbPxlfE=
 github.com/tinywasm/font v0.0.4/go.mod h1:mc8y0jI0VWgsSNEk5f0G3x61Xah4xyfOf9/ds3YaLD8=
 github.com/tinywasm/form v0.3.29 h1:3gbh6nQRERPUB0RdY0+fT9GnWGZPUEr26pv6zQQEBRQ=
 github.com/tinywasm/form v0.3.29/go.mod h1:aGkpLWX0YJOPfCtma+Oc9GR2QACPBoDfT9BoMiECLDw=
+github.com/tinywasm/goflare v0.4.2 h1:f2c/VtBg4wXkY/qGwAc1AdLXejYR3tz4+0zbbnXlWqM=
+github.com/tinywasm/goflare v0.4.2/go.mod h1:dmSDXIrbZN4NFZ+ZHsEq3yc/XD2zxcNzs9dUgO2E57g=
 github.com/tinywasm/html v0.0.17 h1:RROL3aLAGvAAQKsIPK+3XGjr1wOp7PZzxQno0kK69JI=
 github.com/tinywasm/html v0.0.17/go.mod h1:y9CxJFeZBj3iR+TXwudMMiUrIXMQHIYojJKpYZH6NrA=
 github.com/tinywasm/input v0.0.2 h1:ZGgXxCAHk7eiRWIU0hqN42xMGPxPlEumZY+YjSzNrTA=
