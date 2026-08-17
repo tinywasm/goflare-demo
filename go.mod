@@ -37,7 +37,7 @@ require (
 	github.com/tinywasm/jsvalue v0.0.15 // indirect
 	github.com/tinywasm/sqlt v0.0.7 // indirect
 	github.com/tinywasm/time v0.5.0 // indirect
-	github.com/tinywasm/widget v0.6.11 // indirect
+	github.com/tinywasm/widget v0.6.12 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
