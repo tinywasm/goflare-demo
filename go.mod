@@ -12,11 +12,11 @@ require (
 	github.com/tinywasm/html v0.0.17
 	github.com/tinywasm/input v0.0.2
 	github.com/tinywasm/js v0.0.4
-	github.com/tinywasm/json v0.5.11
+	github.com/tinywasm/json v0.5.17
 	github.com/tinywasm/model v0.1.4
 	github.com/tinywasm/orm v0.9.28
-	github.com/tinywasm/router v0.1.11
-	github.com/tinywasm/server v0.2.30
+	github.com/tinywasm/router v0.1.22
+	github.com/tinywasm/server v0.2.39
 	github.com/tinywasm/sqlite v0.2.5
 	github.com/tinywasm/unixid v0.2.26
 )
