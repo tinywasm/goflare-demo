@@ -73,9 +73,9 @@ func ReadOneContact(qb *orm.QB, model *Contact) (*Contact, error) {
 
 func ReadAllContact(qb *orm.QB) (ContactList, error) {
 	var results ContactList
-	err := orm.ReadAll(qb,
-		func() *Contact { return &Contact{} },
-		func(m *Contact) { results = append(results, m) },
+	err := qb.ReadAll(
+		func() model.Model { return &Contact{} },
+		func(m model.Model) { results = append(results, m.(*Contact)) },
 	)
 	return results, err
 }
