@@ -5,6 +5,8 @@ package contact
 import (
 	"testing"
 
+	"github.com/tinywasm/ddl"
+	"github.com/tinywasm/orm"
 	"github.com/tinywasm/sqlite"
 )
 
@@ -12,15 +14,20 @@ import (
 // in-memory SQLite: the exact NewContact + db.Create sequence the handler runs.
 // Mirrors the cloud failure (HTTP 500 / code 1101, empty table) to localize the bug.
 func TestContactCreate_Local(t *testing.T) {
-	db, err := sqlite.Open(":memory:")
+	conn, err := sqlite.Open(":memory:")
 	if err != nil {
 		t.Fatalf("sqlite open: %v", err)
 	}
-	defer db.Close()
+	defer conn.Close()
 
-	if err := db.CreateTable(&Contact{}); err != nil {
+	ddlCompiler, ok := sqlite.DDLCompiler(conn)
+	if !ok {
+		t.Fatalf("sqlite connection has no DDL compiler")
+	}
+	if err := ddl.New(conn, ddlCompiler).Sync(&Contact{}); err != nil {
 		t.Fatalf("create table: %v", err)
 	}
+	db := orm.New(conn)
 
 	body := []byte(`{"nombre":"CI Test","email":"ci@goflare-demo.test","mensaje":"Automated e2e test submission from CI pipeline"}`)
 

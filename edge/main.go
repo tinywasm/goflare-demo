@@ -3,6 +3,7 @@
 package main
 
 import (
+	"github.com/tinywasm/ddl"
 	"github.com/tinywasm/fmt"
 	"github.com/tinywasm/goflare-demo/modules/contact"
 	"github.com/tinywasm/goflare-demo/routes"
@@ -30,7 +31,13 @@ func main() {
 		fmt.Println("d1:", err)
 		return
 	}
-	if err := db.CreateTable(&contact.Contact{}); err != nil {
+	conn := db.RawConn()
+	ddlCompiler, ok := d1.DDLCompiler(conn)
+	if !ok {
+		fmt.Println("migrate: d1 connection has no DDL compiler")
+		return
+	}
+	if err := ddl.New(conn, ddlCompiler).Sync(&contact.Contact{}); err != nil {
 		fmt.Println("migrate:", err)
 		return
 	}
