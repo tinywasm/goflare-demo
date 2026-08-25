@@ -25,8 +25,8 @@ github.com/tinywasm/context v0.0.18 h1:uKeiAFo6L/PikGSbUu+xcyELGoa4kXomDNwJOlhxr
 github.com/tinywasm/context v0.0.18/go.mod h1:3AHZHMiiVZljEGNuYMaLM2OXdZ3bXjoMCmqx3sEGXsA=
 github.com/tinywasm/css v0.4.15 h1:EnBh4exxACZIB/WYOgF5uWRxQGSRFjYn/wRDM2mgnfU=
 github.com/tinywasm/css v0.4.15/go.mod h1:EyCY2mFW664qIyqTQKW1mgkg7cqAK3oF6igiwYdGV5k=
-github.com/tinywasm/ddl v0.0.4 h1:2xgDb87vpY35nyLIttoW4Pvgi+TXVjkXw7+pj0/RjWM=
-github.com/tinywasm/ddl v0.0.4/go.mod h1:gGKj4CVjDEigUyp/gTVK8WxYmQ5NbBMDPlwcibJJse8=
+github.com/tinywasm/ddl v0.0.12 h1:vIX4BdWyxgX9rxzXONerFjf9es60S+pqbFFc0yiMJQ8=
+github.com/tinywasm/ddl v0.0.12/go.mod h1:xY1lGWWzKq8wFecGzkz2bjBud5fE1yDp9kBa1dzYqns=
 github.com/tinywasm/dom v0.13.5 h1:CklQl/U/pJn5Pka3n5xf8xEObFLxuKxrrpXPLGiprWY=
 github.com/tinywasm/dom v0.13.5/go.mod h1:foT4zhFHK4T8ZNPjgT539dAfdslSdY/hD7V0g9CUNgY=
 github.com/tinywasm/env v0.0.8 h1:zO5EqLbm3PCKyXThZSJEBVR6hu07NGDPJe5Ybsbsuy8=
