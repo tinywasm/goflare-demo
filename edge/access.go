@@ -3,8 +3,8 @@
 package main
 
 import (
+	"github.com/tinywasm/env"
 	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/goflare/cloudflare"
 	"github.com/tinywasm/goflare/files"
 	"github.com/tinywasm/model"
 	"github.com/tinywasm/router"
@@ -30,7 +30,7 @@ const (
 
 // demoToken lee el secreto del entorno del Worker. Nunca va en el código: un token en el
 // binario es un token público.
-func demoToken() string { return cloudflare.Env(DemoTokenBinding) }
+func demoToken() string { return env.Get(DemoTokenBinding) }
 
 // authn establece la identidad a partir de la petición. Anónimo ("") es un resultado legal,
 // no un error: las rutas de contacto son públicas y no necesitan a nadie detrás.
