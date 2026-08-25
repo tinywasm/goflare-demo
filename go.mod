@@ -3,7 +3,7 @@ module github.com/tinywasm/goflare-demo
 go 1.25.2
 
 require (
-	github.com/tinywasm/cloudflare v0.0.4
+	github.com/tinywasm/cloudflare v0.0.5
 	github.com/tinywasm/css v0.4.15
 	github.com/tinywasm/ddl v0.0.12
 	github.com/tinywasm/dom v0.13.5
@@ -33,7 +33,7 @@ require (
 	github.com/smallstep/truststore v0.13.0 // indirect
 	github.com/tinywasm/await v0.1.0 // indirect
 	github.com/tinywasm/color v0.1.1 // indirect
-	github.com/tinywasm/context v0.0.18 // indirect
+	github.com/tinywasm/context v0.0.22 // indirect
 	github.com/tinywasm/filetype v0.0.2 // indirect
 	github.com/tinywasm/font v0.0.4 // indirect
 	github.com/tinywasm/jsvalue v0.0.15 // indirect
