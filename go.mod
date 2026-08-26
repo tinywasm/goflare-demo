@@ -18,8 +18,8 @@ require (
 	github.com/tinywasm/json v0.5.23
 	github.com/tinywasm/model v0.1.4
 	github.com/tinywasm/orm v0.11.10
-	github.com/tinywasm/router v0.1.27
-	github.com/tinywasm/server v0.2.41
+	github.com/tinywasm/router v0.1.28
+	github.com/tinywasm/server v0.2.42
 	github.com/tinywasm/sqlite v0.3.2
 	github.com/tinywasm/unixid v0.2.26
 )
