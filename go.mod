@@ -7,7 +7,7 @@ require (
 	github.com/tinywasm/css v0.4.15
 	github.com/tinywasm/ddl v0.0.12
 	github.com/tinywasm/dom v0.13.5
-	github.com/tinywasm/env v0.0.8
+	github.com/tinywasm/env v0.0.9
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.25.7
 	github.com/tinywasm/form v0.3.29
@@ -32,14 +32,18 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
 	github.com/tinywasm/await v0.1.0 // indirect
+	github.com/tinywasm/base64 v0.0.5 // indirect
 	github.com/tinywasm/color v0.1.1 // indirect
 	github.com/tinywasm/context v0.0.22 // indirect
+	github.com/tinywasm/dbus v0.1.0 // indirect
 	github.com/tinywasm/filetype v0.0.5 // indirect
 	github.com/tinywasm/font v0.0.4 // indirect
 	github.com/tinywasm/jsvalue v0.0.15 // indirect
+	github.com/tinywasm/keyring v0.2.3 // indirect
 	github.com/tinywasm/sqlt v0.0.8 // indirect
 	github.com/tinywasm/storage v0.0.2 // indirect
 	github.com/tinywasm/time v0.5.0 // indirect
+	github.com/tinywasm/webauthn v0.1.1 // indirect
 	github.com/tinywasm/widget v0.6.12 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
