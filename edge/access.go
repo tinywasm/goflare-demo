@@ -3,9 +3,9 @@
 package main
 
 import (
+	"github.com/tinywasm/cloudflare/files"
 	"github.com/tinywasm/env"
 	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/goflare/files"
 	"github.com/tinywasm/model"
 	"github.com/tinywasm/router"
 )

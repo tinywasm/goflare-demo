@@ -5,12 +5,12 @@ package main
 import (
 	"github.com/tinywasm/cloudflare/d1"
 	"github.com/tinywasm/cloudflare/edge"
+	"github.com/tinywasm/cloudflare/files"
+	"github.com/tinywasm/cloudflare/r2"
 	"github.com/tinywasm/ddl"
 	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/goflare/files"
 	"github.com/tinywasm/goflare-demo/modules/contact"
 	"github.com/tinywasm/goflare-demo/routes"
-	"github.com/tinywasm/cloudflare/r2"
 	"github.com/tinywasm/router"
 )
 

@@ -3,7 +3,7 @@ module github.com/tinywasm/goflare-demo
 go 1.25.2
 
 require (
-	github.com/tinywasm/cloudflare v0.0.11
+	github.com/tinywasm/cloudflare v0.0.12
 	github.com/tinywasm/css v0.4.15
 	github.com/tinywasm/ddl v0.0.12
 	github.com/tinywasm/dom v0.13.5
@@ -11,7 +11,7 @@ require (
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.25.7
 	github.com/tinywasm/form v0.3.29
-	github.com/tinywasm/goflare v0.5.22
+	github.com/tinywasm/goflare v0.5.28
 	github.com/tinywasm/html v0.0.17
 	github.com/tinywasm/input v0.0.2
 	github.com/tinywasm/js v0.0.4

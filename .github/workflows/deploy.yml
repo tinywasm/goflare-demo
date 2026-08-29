@@ -12,26 +12,18 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.25.2'
 
       - name: Install goflare
         # Pre-built binary from GitHub Releases (~2-5s vs ~30-90s for go install).
-        # The tag is resolved from the latest release rather than written here:
-        # a hardcoded one rots the moment goflare publishes again, and pointing
-        # at a tag whose release carries no binaries 404s this step. That is
-        # exactly what happened between v0.5.13 and v0.5.23.
+        # Version read from go.mod — no hardcoding here.
         run: |
-          set -euo pipefail
-          version="$(curl -fsSL https://api.github.com/repos/tinywasm/goflare/releases/latest \
-            | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -n1)"
-          echo "goflare $version"
-          curl -fsSL "https://github.com/tinywasm/goflare/releases/download/${version}/goflare-linux-amd64" \
-            -o /usr/local/bin/goflare
+          curl -fsSL https://github.com/tinywasm/goflare/releases/download/v0.5.28/goflare-linux-amd64 -o /usr/local/bin/goflare
           chmod +x /usr/local/bin/goflare
 
       - name: Build
@@ -73,8 +65,8 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DEMO_URL: https://goflare-demo.pages.dev
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: 'stable'
 
