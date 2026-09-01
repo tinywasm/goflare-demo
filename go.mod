@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/tinywasm/cloudflare v0.0.12
-	github.com/tinywasm/css v0.4.15
+	github.com/tinywasm/css v0.4.18
 	github.com/tinywasm/ddl v0.0.12
 	github.com/tinywasm/dom v0.13.5
 	github.com/tinywasm/env v0.0.9
@@ -44,7 +44,7 @@ require (
 	github.com/tinywasm/storage v0.0.2 // indirect
 	github.com/tinywasm/time v0.5.0 // indirect
 	github.com/tinywasm/webauthn v0.1.1 // indirect
-	github.com/tinywasm/widget v0.6.14 // indirect
+	github.com/tinywasm/widget v0.6.16 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
