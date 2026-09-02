@@ -42,7 +42,7 @@ require (
 	github.com/tinywasm/keyring v0.2.3 // indirect
 	github.com/tinywasm/sqlt v0.0.8 // indirect
 	github.com/tinywasm/storage v0.0.2 // indirect
-	github.com/tinywasm/time v0.5.0 // indirect
+	github.com/tinywasm/time v0.5.4 // indirect
 	github.com/tinywasm/webauthn v0.1.1 // indirect
 	github.com/tinywasm/widget v0.6.17 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
