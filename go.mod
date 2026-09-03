@@ -19,7 +19,7 @@ require (
 	github.com/tinywasm/model v0.1.7
 	github.com/tinywasm/orm v0.12.0
 	github.com/tinywasm/router v0.1.30
-	github.com/tinywasm/server v0.2.43
+	github.com/tinywasm/server v0.2.44
 	github.com/tinywasm/sqlite v0.3.2
 	github.com/tinywasm/unixid v0.2.26
 )
