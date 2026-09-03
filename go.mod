@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/tinywasm/cloudflare v0.0.12
-	github.com/tinywasm/css v0.4.19
+	github.com/tinywasm/css v0.4.20
 	github.com/tinywasm/ddl v0.0.12
 	github.com/tinywasm/dom v0.13.8
 	github.com/tinywasm/env v0.0.9
