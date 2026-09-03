@@ -44,7 +44,7 @@ require (
 	github.com/tinywasm/storage v0.0.6 // indirect
 	github.com/tinywasm/time v0.5.4 // indirect
 	github.com/tinywasm/webauthn v0.1.1 // indirect
-	github.com/tinywasm/widget v0.6.19 // indirect
+	github.com/tinywasm/widget v0.6.21 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
