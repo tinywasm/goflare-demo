@@ -6,7 +6,7 @@ require (
 	github.com/tinywasm/cloudflare v0.0.16
 	github.com/tinywasm/css v0.4.20
 	github.com/tinywasm/ddl v0.0.12
-	github.com/tinywasm/dom v0.13.8
+	github.com/tinywasm/dom v0.13.9
 	github.com/tinywasm/env v0.0.9
 	github.com/tinywasm/fetch v0.1.24
 	github.com/tinywasm/fmt v0.25.7
